@@ -1,0 +1,1023 @@
+   1               		.file	"bootloader.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text.bootloader_jump,"ax",@progbits
+  11               	.global	bootloader_jump
+  13               	bootloader_jump:
+  14               	.LFB102:
+  15               		.file 1 "./tmk_core/common/avr/bootloader.c"
+   1:./tmk_core/common/avr/bootloader.c **** #include <stdint.h>
+   2:./tmk_core/common/avr/bootloader.c **** #include <stdbool.h>
+   3:./tmk_core/common/avr/bootloader.c **** #include <avr/io.h>
+   4:./tmk_core/common/avr/bootloader.c **** #include <avr/eeprom.h>
+   5:./tmk_core/common/avr/bootloader.c **** #include <avr/interrupt.h>
+   6:./tmk_core/common/avr/bootloader.c **** #include <avr/wdt.h>
+   7:./tmk_core/common/avr/bootloader.c **** #include <util/delay.h>
+   8:./tmk_core/common/avr/bootloader.c **** #include "bootloader.h"
+   9:./tmk_core/common/avr/bootloader.c **** #include <avr/boot.h>
+  10:./tmk_core/common/avr/bootloader.c **** 
+  11:./tmk_core/common/avr/bootloader.c **** #ifdef PROTOCOL_LUFA
+  12:./tmk_core/common/avr/bootloader.c **** #include <LUFA/Drivers/USB/USB.h>
+  13:./tmk_core/common/avr/bootloader.c **** #endif
+  14:./tmk_core/common/avr/bootloader.c **** 
+  15:./tmk_core/common/avr/bootloader.c **** 
+  16:./tmk_core/common/avr/bootloader.c **** /* Bootloader Size in *bytes*
+  17:./tmk_core/common/avr/bootloader.c ****  *
+  18:./tmk_core/common/avr/bootloader.c ****  * AVR Boot section size are defined by setting BOOTSZ fuse in fact. Consult with your MCU datashee
+  19:./tmk_core/common/avr/bootloader.c ****  * Note that 'Word'(2 bytes) size and address are used in datasheet while TMK uses 'Byte'.
+  20:./tmk_core/common/avr/bootloader.c ****  *
+  21:./tmk_core/common/avr/bootloader.c ****  *
+  22:./tmk_core/common/avr/bootloader.c ****  * Size of Bootloaders in bytes:
+  23:./tmk_core/common/avr/bootloader.c ****  *   Atmel DFU loader(ATmega32U4)   4096
+  24:./tmk_core/common/avr/bootloader.c ****  *   Atmel DFU loader(AT90USB128)   8192
+  25:./tmk_core/common/avr/bootloader.c ****  *   LUFA bootloader(ATmega32U4)    4096
+  26:./tmk_core/common/avr/bootloader.c ****  *   Arduino Caterina(ATmega32U4)   4096
+  27:./tmk_core/common/avr/bootloader.c ****  *   USBaspLoader(ATmega***)        2048
+  28:./tmk_core/common/avr/bootloader.c ****  *   Teensy   halfKay(ATmega32U4)   512
+  29:./tmk_core/common/avr/bootloader.c ****  *   Teensy++ halfKay(AT90USB128)   1024
+  30:./tmk_core/common/avr/bootloader.c ****  *
+  31:./tmk_core/common/avr/bootloader.c ****  *
+  32:./tmk_core/common/avr/bootloader.c ****  * AVR Boot section is located at the end of Flash memory like the followings.
+  33:./tmk_core/common/avr/bootloader.c ****  *
+  34:./tmk_core/common/avr/bootloader.c ****  *
+  35:./tmk_core/common/avr/bootloader.c ****  * byte     Atmel/LUFA(ATMega32u4)          byte     Atmel(AT90SUB128)
+  36:./tmk_core/common/avr/bootloader.c ****  * 0x0000   +---------------+               0x00000  +---------------+
+  37:./tmk_core/common/avr/bootloader.c ****  *          |               |                        |               |
+  38:./tmk_core/common/avr/bootloader.c ****  *          |               |                        |               |
+  39:./tmk_core/common/avr/bootloader.c ****  *          |  Application  |                        |  Application  |
+  40:./tmk_core/common/avr/bootloader.c ****  *          |               |                        |               |
+  41:./tmk_core/common/avr/bootloader.c ****  *          =               =                        =               =
+  42:./tmk_core/common/avr/bootloader.c ****  *          |               | 32KB-4KB               |               | 128KB-8KB
+  43:./tmk_core/common/avr/bootloader.c ****  * 0x7000   +---------------+               0x1E000  +---------------+
+  44:./tmk_core/common/avr/bootloader.c ****  *          |  Bootloader   | 4KB                    |  Bootloader   | 8KB
+  45:./tmk_core/common/avr/bootloader.c ****  * 0x7FFF   +---------------+               0x1FFFF  +---------------+
+  46:./tmk_core/common/avr/bootloader.c ****  *
+  47:./tmk_core/common/avr/bootloader.c ****  *
+  48:./tmk_core/common/avr/bootloader.c ****  * byte     Teensy(ATMega32u4)              byte     Teensy++(AT90SUB128)
+  49:./tmk_core/common/avr/bootloader.c ****  * 0x0000   +---------------+               0x00000  +---------------+
+  50:./tmk_core/common/avr/bootloader.c ****  *          |               |                        |               |
+  51:./tmk_core/common/avr/bootloader.c ****  *          |               |                        |               |
+  52:./tmk_core/common/avr/bootloader.c ****  *          |  Application  |                        |  Application  |
+  53:./tmk_core/common/avr/bootloader.c ****  *          |               |                        |               |
+  54:./tmk_core/common/avr/bootloader.c ****  *          =               =                        =               =
+  55:./tmk_core/common/avr/bootloader.c ****  *          |               | 32KB-512B              |               | 128KB-1KB
+  56:./tmk_core/common/avr/bootloader.c ****  * 0x7E00   +---------------+               0x1FC00  +---------------+
+  57:./tmk_core/common/avr/bootloader.c ****  *          |  Bootloader   | 512B                   |  Bootloader   | 1KB
+  58:./tmk_core/common/avr/bootloader.c ****  * 0x7FFF   +---------------+               0x1FFFF  +---------------+
+  59:./tmk_core/common/avr/bootloader.c ****  */
+  60:./tmk_core/common/avr/bootloader.c **** 
+  61:./tmk_core/common/avr/bootloader.c **** #define FLASH_SIZE (FLASHEND + 1L)
+  62:./tmk_core/common/avr/bootloader.c **** 
+  63:./tmk_core/common/avr/bootloader.c **** #if !defined(BOOTLOADER_SIZE)
+  64:./tmk_core/common/avr/bootloader.c ****     uint16_t bootloader_start;
+  65:./tmk_core/common/avr/bootloader.c **** #endif
+  66:./tmk_core/common/avr/bootloader.c **** 
+  67:./tmk_core/common/avr/bootloader.c **** #define BOOT_SIZE_256  0b110
+  68:./tmk_core/common/avr/bootloader.c **** #define BOOT_SIZE_512  0b100
+  69:./tmk_core/common/avr/bootloader.c **** #define BOOT_SIZE_1024 0b010
+  70:./tmk_core/common/avr/bootloader.c **** #define BOOT_SIZE_2048 0b000
+  71:./tmk_core/common/avr/bootloader.c **** 
+  72:./tmk_core/common/avr/bootloader.c **** /*
+  73:./tmk_core/common/avr/bootloader.c ****  * Entering the Bootloader via Software
+  74:./tmk_core/common/avr/bootloader.c ****  * http://www.fourwalledcubicle.com/files/LUFA/Doc/120730/html/_page__software_bootloader_start.htm
+  75:./tmk_core/common/avr/bootloader.c ****  */
+  76:./tmk_core/common/avr/bootloader.c **** #define BOOTLOADER_RESET_KEY 0xB007B007
+  77:./tmk_core/common/avr/bootloader.c **** uint32_t reset_key  __attribute__ ((section (".noinit")));
+  78:./tmk_core/common/avr/bootloader.c **** 
+  79:./tmk_core/common/avr/bootloader.c **** /* initialize MCU status by watchdog reset */
+  80:./tmk_core/common/avr/bootloader.c **** void bootloader_jump(void) {
+  16               		.loc 1 80 0
+  17               		.cfi_startproc
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+  81:./tmk_core/common/avr/bootloader.c **** 
+  82:./tmk_core/common/avr/bootloader.c ****     #if !defined(BOOTLOADER_SIZE)
+  83:./tmk_core/common/avr/bootloader.c ****         uint8_t high_fuse = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+  84:./tmk_core/common/avr/bootloader.c **** 
+  85:./tmk_core/common/avr/bootloader.c ****         if (high_fuse & BOOT_SIZE_256) { 
+  86:./tmk_core/common/avr/bootloader.c ****             bootloader_start = (FLASH_SIZE - 512) >> 1;
+  87:./tmk_core/common/avr/bootloader.c ****         } else if (high_fuse & BOOT_SIZE_512) {
+  88:./tmk_core/common/avr/bootloader.c ****             bootloader_start = (FLASH_SIZE - 1024) >> 1;
+  89:./tmk_core/common/avr/bootloader.c ****         } else if (high_fuse & BOOT_SIZE_1024) {
+  90:./tmk_core/common/avr/bootloader.c ****             bootloader_start = (FLASH_SIZE - 2048) >> 1;
+  91:./tmk_core/common/avr/bootloader.c ****         } else {
+  92:./tmk_core/common/avr/bootloader.c ****             bootloader_start = (FLASH_SIZE - 4096) >> 1;
+  93:./tmk_core/common/avr/bootloader.c ****         }
+  94:./tmk_core/common/avr/bootloader.c ****     #endif
+  95:./tmk_core/common/avr/bootloader.c **** 
+  96:./tmk_core/common/avr/bootloader.c ****     // Something like this might work, but it compiled larger than the block above
+  97:./tmk_core/common/avr/bootloader.c ****     // bootloader_start = FLASH_SIZE - (256 << (~high_fuse & 0b110 >> 1));
+  98:./tmk_core/common/avr/bootloader.c **** 
+  99:./tmk_core/common/avr/bootloader.c **** 
+ 100:./tmk_core/common/avr/bootloader.c ****     #if defined(BOOTLOADER_HALFKAY)
+ 101:./tmk_core/common/avr/bootloader.c ****         //  http://www.pjrc.com/teensy/jump_to_bootloader.html
+ 102:./tmk_core/common/avr/bootloader.c ****         cli();
+ 103:./tmk_core/common/avr/bootloader.c ****         // disable watchdog, if enabled (it's not)
+ 104:./tmk_core/common/avr/bootloader.c ****         // disable all peripherals
+ 105:./tmk_core/common/avr/bootloader.c ****         // a shutdown call might make sense here
+ 106:./tmk_core/common/avr/bootloader.c ****         UDCON = 1;
+ 107:./tmk_core/common/avr/bootloader.c ****         USBCON = (1<<FRZCLK);  // disable USB
+ 108:./tmk_core/common/avr/bootloader.c ****         UCSR1B = 0;
+ 109:./tmk_core/common/avr/bootloader.c ****         _delay_ms(5);
+ 110:./tmk_core/common/avr/bootloader.c ****         #if defined(__AVR_AT90USB162__)                // Teensy 1.0
+ 111:./tmk_core/common/avr/bootloader.c ****             EIMSK = 0; PCICR = 0; SPCR = 0; ACSR = 0; EECR = 0;
+ 112:./tmk_core/common/avr/bootloader.c ****             TIMSK0 = 0; TIMSK1 = 0; UCSR1B = 0;
+ 113:./tmk_core/common/avr/bootloader.c ****             DDRB = 0; DDRC = 0; DDRD = 0;
+ 114:./tmk_core/common/avr/bootloader.c ****             PORTB = 0; PORTC = 0; PORTD = 0;
+ 115:./tmk_core/common/avr/bootloader.c ****             asm volatile("jmp 0x3E00");
+ 116:./tmk_core/common/avr/bootloader.c ****         #elif defined(__AVR_ATmega32U4__)              // Teensy 2.0
+ 117:./tmk_core/common/avr/bootloader.c ****             EIMSK = 0; PCICR = 0; SPCR = 0; ACSR = 0; EECR = 0; ADCSRA = 0;
+ 118:./tmk_core/common/avr/bootloader.c ****             TIMSK0 = 0; TIMSK1 = 0; TIMSK3 = 0; TIMSK4 = 0; UCSR1B = 0; TWCR = 0;
+ 119:./tmk_core/common/avr/bootloader.c ****             DDRB = 0; DDRC = 0; DDRD = 0; DDRE = 0; DDRF = 0; TWCR = 0;
+ 120:./tmk_core/common/avr/bootloader.c ****             PORTB = 0; PORTC = 0; PORTD = 0; PORTE = 0; PORTF = 0;
+ 121:./tmk_core/common/avr/bootloader.c ****             asm volatile("jmp 0x7E00");
+ 122:./tmk_core/common/avr/bootloader.c ****         #elif defined(__AVR_AT90USB646__)              // Teensy++ 1.0
+ 123:./tmk_core/common/avr/bootloader.c ****             EIMSK = 0; PCICR = 0; SPCR = 0; ACSR = 0; EECR = 0; ADCSRA = 0;
+ 124:./tmk_core/common/avr/bootloader.c ****             TIMSK0 = 0; TIMSK1 = 0; TIMSK2 = 0; TIMSK3 = 0; UCSR1B = 0; TWCR = 0;
+ 125:./tmk_core/common/avr/bootloader.c ****             DDRA = 0; DDRB = 0; DDRC = 0; DDRD = 0; DDRE = 0; DDRF = 0;
+ 126:./tmk_core/common/avr/bootloader.c ****             PORTA = 0; PORTB = 0; PORTC = 0; PORTD = 0; PORTE = 0; PORTF = 0;
+ 127:./tmk_core/common/avr/bootloader.c ****             asm volatile("jmp 0xFC00");
+ 128:./tmk_core/common/avr/bootloader.c ****         #elif defined(__AVR_AT90USB1286__)             // Teensy++ 2.0
+ 129:./tmk_core/common/avr/bootloader.c ****             EIMSK = 0; PCICR = 0; SPCR = 0; ACSR = 0; EECR = 0; ADCSRA = 0;
+ 130:./tmk_core/common/avr/bootloader.c ****             TIMSK0 = 0; TIMSK1 = 0; TIMSK2 = 0; TIMSK3 = 0; UCSR1B = 0; TWCR = 0;
+ 131:./tmk_core/common/avr/bootloader.c ****             DDRA = 0; DDRB = 0; DDRC = 0; DDRD = 0; DDRE = 0; DDRF = 0;
+ 132:./tmk_core/common/avr/bootloader.c ****             PORTA = 0; PORTB = 0; PORTC = 0; PORTD = 0; PORTE = 0; PORTF = 0;
+ 133:./tmk_core/common/avr/bootloader.c ****             asm volatile("jmp 0x1FC00");
+ 134:./tmk_core/common/avr/bootloader.c ****         #endif 
+ 135:./tmk_core/common/avr/bootloader.c **** 
+ 136:./tmk_core/common/avr/bootloader.c ****     #elif defined(BOOTLOADER_CATERINA)
+ 137:./tmk_core/common/avr/bootloader.c ****         // this block may be optional
+ 138:./tmk_core/common/avr/bootloader.c ****         // TODO: figure it out
+ 139:./tmk_core/common/avr/bootloader.c **** 
+ 140:./tmk_core/common/avr/bootloader.c ****         uint16_t *const bootKeyPtr = (uint16_t *)0x0800;
+ 141:./tmk_core/common/avr/bootloader.c **** 
+ 142:./tmk_core/common/avr/bootloader.c ****         // Value used by Caterina bootloader use to determine whether to run the
+ 143:./tmk_core/common/avr/bootloader.c ****         // sketch or the bootloader programmer.
+ 144:./tmk_core/common/avr/bootloader.c ****         uint16_t bootKey = 0x7777;
+ 145:./tmk_core/common/avr/bootloader.c **** 
+ 146:./tmk_core/common/avr/bootloader.c ****         *bootKeyPtr = bootKey;
+ 147:./tmk_core/common/avr/bootloader.c **** 
+ 148:./tmk_core/common/avr/bootloader.c ****         // setup watchdog timeout
+ 149:./tmk_core/common/avr/bootloader.c ****         wdt_enable(WDTO_60MS);
+ 150:./tmk_core/common/avr/bootloader.c **** 
+ 151:./tmk_core/common/avr/bootloader.c ****         while(1) {} // wait for watchdog timer to trigger
+ 152:./tmk_core/common/avr/bootloader.c **** 
+ 153:./tmk_core/common/avr/bootloader.c ****     #else // Assume remaining boards are DFU, even if the flag isn't set
+ 154:./tmk_core/common/avr/bootloader.c **** 
+ 155:./tmk_core/common/avr/bootloader.c ****         #ifndef __AVR_ATmega32A__ // no USB - maybe BOOTLOADER_BOOTLOADHID instead though?
+ 156:./tmk_core/common/avr/bootloader.c ****             UDCON = 1;
+  22               		.loc 1 156 0
+  23 0000 81E0      		ldi r24,lo8(1)
+  24 0002 8093 E000 		sts 224,r24
+ 157:./tmk_core/common/avr/bootloader.c ****             USBCON = (1<<FRZCLK);  // disable USB
+  25               		.loc 1 157 0
+  26 0006 80E2      		ldi r24,lo8(32)
+  27 0008 8093 D800 		sts 216,r24
+ 158:./tmk_core/common/avr/bootloader.c ****             UCSR1B = 0;
+  28               		.loc 1 158 0
+  29 000c 1092 C900 		sts 201,__zero_reg__
+  30               	.LVL0:
+  31               	.LBB9:
+  32               	.LBB10:
+  33               		.file 2 "/usr/avr/include/util/delay.h"
+   1:/usr/avr/include/util/delay.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/usr/avr/include/util/delay.h ****    Copyright (c) 2004,2005,2007 Joerg Wunsch
+   3:/usr/avr/include/util/delay.h ****    Copyright (c) 2007  Florin-Viorel Petrov
+   4:/usr/avr/include/util/delay.h ****    All rights reserved.
+   5:/usr/avr/include/util/delay.h **** 
+   6:/usr/avr/include/util/delay.h ****    Redistribution and use in source and binary forms, with or without
+   7:/usr/avr/include/util/delay.h ****    modification, are permitted provided that the following conditions are met:
+   8:/usr/avr/include/util/delay.h **** 
+   9:/usr/avr/include/util/delay.h ****    * Redistributions of source code must retain the above copyright
+  10:/usr/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer.
+  11:/usr/avr/include/util/delay.h **** 
+  12:/usr/avr/include/util/delay.h ****    * Redistributions in binary form must reproduce the above copyright
+  13:/usr/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer in
+  14:/usr/avr/include/util/delay.h ****      the documentation and/or other materials provided with the
+  15:/usr/avr/include/util/delay.h ****      distribution.
+  16:/usr/avr/include/util/delay.h **** 
+  17:/usr/avr/include/util/delay.h ****    * Neither the name of the copyright holders nor the names of
+  18:/usr/avr/include/util/delay.h ****      contributors may be used to endorse or promote products derived
+  19:/usr/avr/include/util/delay.h ****      from this software without specific prior written permission.
+  20:/usr/avr/include/util/delay.h **** 
+  21:/usr/avr/include/util/delay.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  22:/usr/avr/include/util/delay.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  23:/usr/avr/include/util/delay.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  24:/usr/avr/include/util/delay.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  25:/usr/avr/include/util/delay.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  26:/usr/avr/include/util/delay.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  27:/usr/avr/include/util/delay.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  28:/usr/avr/include/util/delay.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  29:/usr/avr/include/util/delay.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  30:/usr/avr/include/util/delay.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  31:/usr/avr/include/util/delay.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  32:/usr/avr/include/util/delay.h **** 
+  33:/usr/avr/include/util/delay.h **** /* $Id: delay.h.in 2506 2016-02-08 10:05:45Z joerg_wunsch $ */
+  34:/usr/avr/include/util/delay.h **** 
+  35:/usr/avr/include/util/delay.h **** #ifndef _UTIL_DELAY_H_
+  36:/usr/avr/include/util/delay.h **** #define _UTIL_DELAY_H_ 1
+  37:/usr/avr/include/util/delay.h **** 
+  38:/usr/avr/include/util/delay.h **** #ifndef __DOXYGEN__
+  39:/usr/avr/include/util/delay.h **** #  ifndef __HAS_DELAY_CYCLES
+  40:/usr/avr/include/util/delay.h **** #    define __HAS_DELAY_CYCLES 1
+  41:/usr/avr/include/util/delay.h **** #  endif
+  42:/usr/avr/include/util/delay.h **** #endif  /* __DOXYGEN__ */
+  43:/usr/avr/include/util/delay.h **** 
+  44:/usr/avr/include/util/delay.h **** #include <inttypes.h>
+  45:/usr/avr/include/util/delay.h **** #include <util/delay_basic.h>
+  46:/usr/avr/include/util/delay.h **** #include <math.h>
+  47:/usr/avr/include/util/delay.h **** 
+  48:/usr/avr/include/util/delay.h **** /** \file */
+  49:/usr/avr/include/util/delay.h **** /** \defgroup util_delay <util/delay.h>: Convenience functions for busy-wait delay loops
+  50:/usr/avr/include/util/delay.h ****     \code
+  51:/usr/avr/include/util/delay.h ****     #define F_CPU 1000000UL  // 1 MHz
+  52:/usr/avr/include/util/delay.h ****     //#define F_CPU 14.7456E6
+  53:/usr/avr/include/util/delay.h ****     #include <util/delay.h>
+  54:/usr/avr/include/util/delay.h ****     \endcode
+  55:/usr/avr/include/util/delay.h **** 
+  56:/usr/avr/include/util/delay.h ****     \note As an alternative method, it is possible to pass the
+  57:/usr/avr/include/util/delay.h ****     F_CPU macro down to the compiler from the Makefile.
+  58:/usr/avr/include/util/delay.h ****     Obviously, in that case, no \c \#define statement should be
+  59:/usr/avr/include/util/delay.h ****     used.
+  60:/usr/avr/include/util/delay.h **** 
+  61:/usr/avr/include/util/delay.h ****     The functions in this header file are wrappers around the basic
+  62:/usr/avr/include/util/delay.h ****     busy-wait functions from <util/delay_basic.h>.  They are meant as
+  63:/usr/avr/include/util/delay.h ****     convenience functions where actual time values can be specified
+  64:/usr/avr/include/util/delay.h ****     rather than a number of cycles to wait for.  The idea behind is
+  65:/usr/avr/include/util/delay.h ****     that compile-time constant expressions will be eliminated by
+  66:/usr/avr/include/util/delay.h ****     compiler optimization so floating-point expressions can be used
+  67:/usr/avr/include/util/delay.h ****     to calculate the number of delay cycles needed based on the CPU
+  68:/usr/avr/include/util/delay.h ****     frequency passed by the macro F_CPU.
+  69:/usr/avr/include/util/delay.h **** 
+  70:/usr/avr/include/util/delay.h ****     \note In order for these functions to work as intended, compiler
+  71:/usr/avr/include/util/delay.h ****     optimizations <em>must</em> be enabled, and the delay time
+  72:/usr/avr/include/util/delay.h ****     <em>must</em> be an expression that is a known constant at
+  73:/usr/avr/include/util/delay.h ****     compile-time.  If these requirements are not met, the resulting
+  74:/usr/avr/include/util/delay.h ****     delay will be much longer (and basically unpredictable), and
+  75:/usr/avr/include/util/delay.h ****     applications that otherwise do not use floating-point calculations
+  76:/usr/avr/include/util/delay.h ****     will experience severe code bloat by the floating-point library
+  77:/usr/avr/include/util/delay.h ****     routines linked into the application.
+  78:/usr/avr/include/util/delay.h **** 
+  79:/usr/avr/include/util/delay.h ****     The functions available allow the specification of microsecond, and
+  80:/usr/avr/include/util/delay.h ****     millisecond delays directly, using the application-supplied macro
+  81:/usr/avr/include/util/delay.h ****     F_CPU as the CPU clock frequency (in Hertz).
+  82:/usr/avr/include/util/delay.h **** 
+  83:/usr/avr/include/util/delay.h **** */
+  84:/usr/avr/include/util/delay.h **** 
+  85:/usr/avr/include/util/delay.h **** #if !defined(__DOXYGEN__)
+  86:/usr/avr/include/util/delay.h **** static __inline__ void _delay_us(double __us) __attribute__((__always_inline__));
+  87:/usr/avr/include/util/delay.h **** static __inline__ void _delay_ms(double __ms) __attribute__((__always_inline__));
+  88:/usr/avr/include/util/delay.h **** #endif
+  89:/usr/avr/include/util/delay.h **** 
+  90:/usr/avr/include/util/delay.h **** #ifndef F_CPU
+  91:/usr/avr/include/util/delay.h **** /* prevent compiler error by supplying a default */
+  92:/usr/avr/include/util/delay.h **** # warning "F_CPU not defined for <util/delay.h>"
+  93:/usr/avr/include/util/delay.h **** /** \ingroup util_delay
+  94:/usr/avr/include/util/delay.h ****     \def F_CPU
+  95:/usr/avr/include/util/delay.h ****     \brief CPU frequency in Hz
+  96:/usr/avr/include/util/delay.h **** 
+  97:/usr/avr/include/util/delay.h ****     The macro F_CPU specifies the CPU frequency to be considered by
+  98:/usr/avr/include/util/delay.h ****     the delay macros.  This macro is normally supplied by the
+  99:/usr/avr/include/util/delay.h ****     environment (e.g. from within a project header, or the project's
+ 100:/usr/avr/include/util/delay.h ****     Makefile).  The value 1 MHz here is only provided as a "vanilla"
+ 101:/usr/avr/include/util/delay.h ****     fallback if no such user-provided definition could be found.
+ 102:/usr/avr/include/util/delay.h **** 
+ 103:/usr/avr/include/util/delay.h ****     In terms of the delay functions, the CPU frequency can be given as
+ 104:/usr/avr/include/util/delay.h ****     a floating-point constant (e.g. 3.6864E6 for 3.6864 MHz).
+ 105:/usr/avr/include/util/delay.h ****     However, the macros in <util/setbaud.h> require it to be an
+ 106:/usr/avr/include/util/delay.h ****     integer value.
+ 107:/usr/avr/include/util/delay.h ****  */
+ 108:/usr/avr/include/util/delay.h **** # define F_CPU 1000000UL
+ 109:/usr/avr/include/util/delay.h **** #endif
+ 110:/usr/avr/include/util/delay.h **** 
+ 111:/usr/avr/include/util/delay.h **** #ifndef __OPTIMIZE__
+ 112:/usr/avr/include/util/delay.h **** # warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+ 113:/usr/avr/include/util/delay.h **** #endif
+ 114:/usr/avr/include/util/delay.h **** 
+ 115:/usr/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 116:/usr/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 117:/usr/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 118:/usr/avr/include/util/delay.h **** #  include <math.h>
+ 119:/usr/avr/include/util/delay.h **** #endif
+ 120:/usr/avr/include/util/delay.h **** 
+ 121:/usr/avr/include/util/delay.h **** /**
+ 122:/usr/avr/include/util/delay.h ****    \ingroup util_delay
+ 123:/usr/avr/include/util/delay.h **** 
+ 124:/usr/avr/include/util/delay.h ****    Perform a delay of \c __ms milliseconds, using _delay_loop_2().
+ 125:/usr/avr/include/util/delay.h **** 
+ 126:/usr/avr/include/util/delay.h ****    The macro F_CPU is supposed to be defined to a
+ 127:/usr/avr/include/util/delay.h ****    constant defining the CPU clock frequency (in Hertz).
+ 128:/usr/avr/include/util/delay.h **** 
+ 129:/usr/avr/include/util/delay.h ****    The maximal possible delay is 262.14 ms / F_CPU in MHz.
+ 130:/usr/avr/include/util/delay.h **** 
+ 131:/usr/avr/include/util/delay.h ****    When the user request delay which exceed the maximum possible one,
+ 132:/usr/avr/include/util/delay.h ****    _delay_ms() provides a decreased resolution functionality. In this
+ 133:/usr/avr/include/util/delay.h ****    mode _delay_ms() will work with a resolution of 1/10 ms, providing
+ 134:/usr/avr/include/util/delay.h ****    delays up to 6.5535 seconds (independent from CPU frequency).  The
+ 135:/usr/avr/include/util/delay.h ****    user will not be informed about decreased resolution.
+ 136:/usr/avr/include/util/delay.h **** 
+ 137:/usr/avr/include/util/delay.h ****    If the avr-gcc toolchain has __builtin_avr_delay_cycles()
+ 138:/usr/avr/include/util/delay.h ****    support, maximal possible delay is 4294967.295 ms/ F_CPU in MHz. For
+ 139:/usr/avr/include/util/delay.h ****    values greater than the maximal possible delay, overflows results in
+ 140:/usr/avr/include/util/delay.h ****    no delay i.e., 0ms.
+ 141:/usr/avr/include/util/delay.h **** 
+ 142:/usr/avr/include/util/delay.h ****    Conversion of \c __ms into clock cycles may not always result in
+ 143:/usr/avr/include/util/delay.h ****    integer.  By default, the clock cycles rounded up to next
+ 144:/usr/avr/include/util/delay.h ****    integer. This ensures that the user gets at least \c __ms
+ 145:/usr/avr/include/util/delay.h ****    microseconds of delay.
+ 146:/usr/avr/include/util/delay.h **** 
+ 147:/usr/avr/include/util/delay.h ****    Alternatively, by defining the macro \c __DELAY_ROUND_DOWN__, or
+ 148:/usr/avr/include/util/delay.h ****    \c __DELAY_ROUND_CLOSEST__, before including this header file, the
+ 149:/usr/avr/include/util/delay.h ****    algorithm can be made to round down, or round to closest integer,
+ 150:/usr/avr/include/util/delay.h ****    respectively.
+ 151:/usr/avr/include/util/delay.h **** 
+ 152:/usr/avr/include/util/delay.h ****    \note
+ 153:/usr/avr/include/util/delay.h **** 
+ 154:/usr/avr/include/util/delay.h ****    The implementation of _delay_ms() based on
+ 155:/usr/avr/include/util/delay.h ****    __builtin_avr_delay_cycles() is not backward compatible with older
+ 156:/usr/avr/include/util/delay.h ****    implementations.  In order to get functionality backward compatible
+ 157:/usr/avr/include/util/delay.h ****    with previous versions, the macro \c "__DELAY_BACKWARD_COMPATIBLE__"
+ 158:/usr/avr/include/util/delay.h ****    must be defined before including this header file. Also, the
+ 159:/usr/avr/include/util/delay.h ****    backward compatible algorithm will be chosen if the code is
+ 160:/usr/avr/include/util/delay.h ****    compiled in a <em>freestanding environment</em> (GCC option
+ 161:/usr/avr/include/util/delay.h ****    \c -ffreestanding), as the math functions required for rounding are
+ 162:/usr/avr/include/util/delay.h ****    not available to the compiler then.
+ 163:/usr/avr/include/util/delay.h **** 
+ 164:/usr/avr/include/util/delay.h ****  */
+ 165:/usr/avr/include/util/delay.h **** void
+ 166:/usr/avr/include/util/delay.h **** _delay_ms(double __ms)
+ 167:/usr/avr/include/util/delay.h **** {
+ 168:/usr/avr/include/util/delay.h **** 	double __tmp ;
+ 169:/usr/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 170:/usr/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 171:/usr/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 172:/usr/avr/include/util/delay.h **** 	uint32_t __ticks_dc;
+ 173:/usr/avr/include/util/delay.h **** 	extern void __builtin_avr_delay_cycles(unsigned long);
+ 174:/usr/avr/include/util/delay.h **** 	__tmp = ((F_CPU) / 1e3) * __ms;
+ 175:/usr/avr/include/util/delay.h **** 
+ 176:/usr/avr/include/util/delay.h **** 	#if defined(__DELAY_ROUND_DOWN__)
+ 177:/usr/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)fabs(__tmp);
+ 178:/usr/avr/include/util/delay.h **** 
+ 179:/usr/avr/include/util/delay.h **** 	#elif defined(__DELAY_ROUND_CLOSEST__)
+ 180:/usr/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(fabs(__tmp)+0.5);
+ 181:/usr/avr/include/util/delay.h **** 
+ 182:/usr/avr/include/util/delay.h **** 	#else
+ 183:/usr/avr/include/util/delay.h **** 		//round up by default
+ 184:/usr/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+ 185:/usr/avr/include/util/delay.h **** 	#endif
+ 186:/usr/avr/include/util/delay.h **** 
+ 187:/usr/avr/include/util/delay.h **** 	__builtin_avr_delay_cycles(__ticks_dc);
+  34               		.loc 2 187 0
+  35 0010 8FE1      		ldi r24,lo8(19999)
+  36 0012 9EE4      		ldi r25,hi8(19999)
+  37 0014 0197      	1:	sbiw r24,1
+  38 0016 01F4      		brne 1b
+  39 0018 00C0      		rjmp .
+  40 001a 0000      		nop
+  41               	.LVL1:
+  42               	.LBE10:
+  43               	.LBE9:
+ 159:./tmk_core/common/avr/bootloader.c ****             _delay_ms(5); // 5 seems to work fine
+ 160:./tmk_core/common/avr/bootloader.c ****         #endif
+ 161:./tmk_core/common/avr/bootloader.c **** 
+ 162:./tmk_core/common/avr/bootloader.c ****         #ifdef BOOTLOADER_BOOTLOADHID
+ 163:./tmk_core/common/avr/bootloader.c ****             // force bootloadHID to stay in bootloader mode, so that it waits
+ 164:./tmk_core/common/avr/bootloader.c ****             // for a new firmware to be flashed
+ 165:./tmk_core/common/avr/bootloader.c ****             eeprom_write_byte((uint8_t *)1, 0x00);
+ 166:./tmk_core/common/avr/bootloader.c ****         #endif
+ 167:./tmk_core/common/avr/bootloader.c **** 
+ 168:./tmk_core/common/avr/bootloader.c ****         // watchdog reset
+ 169:./tmk_core/common/avr/bootloader.c ****         reset_key = BOOTLOADER_RESET_KEY;
+  44               		.loc 1 169 0
+  45 001c 87E0      		ldi r24,lo8(7)
+  46 001e 90EB      		ldi r25,lo8(-80)
+  47 0020 DC01      		movw r26,r24
+  48 0022 8093 0000 		sts reset_key,r24
+  49 0026 9093 0000 		sts reset_key+1,r25
+  50 002a A093 0000 		sts reset_key+2,r26
+  51 002e B093 0000 		sts reset_key+3,r27
+  52               	.LVL2:
+  53               	.LBB11:
+  54               	.LBB12:
+  55               		.file 3 "/usr/avr/include/avr/wdt.h"
+   1:/usr/avr/include/avr/wdt.h **** /* Copyright (c) 2002, 2004 Marek Michalkiewicz
+   2:/usr/avr/include/avr/wdt.h ****    Copyright (c) 2005, 2006, 2007 Eric B. Weddington
+   3:/usr/avr/include/avr/wdt.h ****    All rights reserved.
+   4:/usr/avr/include/avr/wdt.h **** 
+   5:/usr/avr/include/avr/wdt.h ****    Redistribution and use in source and binary forms, with or without
+   6:/usr/avr/include/avr/wdt.h ****    modification, are permitted provided that the following conditions are met:
+   7:/usr/avr/include/avr/wdt.h **** 
+   8:/usr/avr/include/avr/wdt.h ****    * Redistributions of source code must retain the above copyright
+   9:/usr/avr/include/avr/wdt.h ****      notice, this list of conditions and the following disclaimer.
+  10:/usr/avr/include/avr/wdt.h **** 
+  11:/usr/avr/include/avr/wdt.h ****    * Redistributions in binary form must reproduce the above copyright
+  12:/usr/avr/include/avr/wdt.h ****      notice, this list of conditions and the following disclaimer in
+  13:/usr/avr/include/avr/wdt.h ****      the documentation and/or other materials provided with the
+  14:/usr/avr/include/avr/wdt.h ****      distribution.
+  15:/usr/avr/include/avr/wdt.h **** 
+  16:/usr/avr/include/avr/wdt.h ****    * Neither the name of the copyright holders nor the names of
+  17:/usr/avr/include/avr/wdt.h ****      contributors may be used to endorse or promote products derived
+  18:/usr/avr/include/avr/wdt.h ****      from this software without specific prior written permission.
+  19:/usr/avr/include/avr/wdt.h **** 
+  20:/usr/avr/include/avr/wdt.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  21:/usr/avr/include/avr/wdt.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  22:/usr/avr/include/avr/wdt.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  23:/usr/avr/include/avr/wdt.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  24:/usr/avr/include/avr/wdt.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  25:/usr/avr/include/avr/wdt.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  26:/usr/avr/include/avr/wdt.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  27:/usr/avr/include/avr/wdt.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  28:/usr/avr/include/avr/wdt.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  29:/usr/avr/include/avr/wdt.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  30:/usr/avr/include/avr/wdt.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  31:/usr/avr/include/avr/wdt.h **** 
+  32:/usr/avr/include/avr/wdt.h **** /* $Id: wdt.h 2503 2016-02-07 22:59:47Z joerg_wunsch $ */
+  33:/usr/avr/include/avr/wdt.h **** 
+  34:/usr/avr/include/avr/wdt.h **** /*
+  35:/usr/avr/include/avr/wdt.h ****    avr/wdt.h - macros for AVR watchdog timer
+  36:/usr/avr/include/avr/wdt.h ****  */
+  37:/usr/avr/include/avr/wdt.h **** 
+  38:/usr/avr/include/avr/wdt.h **** #ifndef _AVR_WDT_H_
+  39:/usr/avr/include/avr/wdt.h **** #define _AVR_WDT_H_
+  40:/usr/avr/include/avr/wdt.h **** 
+  41:/usr/avr/include/avr/wdt.h **** #include <avr/io.h>
+  42:/usr/avr/include/avr/wdt.h **** #include <stdint.h>
+  43:/usr/avr/include/avr/wdt.h **** 
+  44:/usr/avr/include/avr/wdt.h **** /** \file */
+  45:/usr/avr/include/avr/wdt.h **** /** \defgroup avr_watchdog <avr/wdt.h>: Watchdog timer handling
+  46:/usr/avr/include/avr/wdt.h ****     \code #include <avr/wdt.h> \endcode
+  47:/usr/avr/include/avr/wdt.h **** 
+  48:/usr/avr/include/avr/wdt.h ****     This header file declares the interface to some inline macros
+  49:/usr/avr/include/avr/wdt.h ****     handling the watchdog timer present in many AVR devices.  In order
+  50:/usr/avr/include/avr/wdt.h ****     to prevent the watchdog timer configuration from being
+  51:/usr/avr/include/avr/wdt.h ****     accidentally altered by a crashing application, a special timed
+  52:/usr/avr/include/avr/wdt.h ****     sequence is required in order to change it.  The macros within
+  53:/usr/avr/include/avr/wdt.h ****     this header file handle the required sequence automatically
+  54:/usr/avr/include/avr/wdt.h ****     before changing any value.  Interrupts will be disabled during
+  55:/usr/avr/include/avr/wdt.h ****     the manipulation.
+  56:/usr/avr/include/avr/wdt.h **** 
+  57:/usr/avr/include/avr/wdt.h ****     \note Depending on the fuse configuration of the particular
+  58:/usr/avr/include/avr/wdt.h ****     device, further restrictions might apply, in particular it might
+  59:/usr/avr/include/avr/wdt.h ****     be disallowed to turn off the watchdog timer.
+  60:/usr/avr/include/avr/wdt.h **** 
+  61:/usr/avr/include/avr/wdt.h ****     Note that for newer devices (ATmega88 and newer, effectively any
+  62:/usr/avr/include/avr/wdt.h ****     AVR that has the option to also generate interrupts), the watchdog
+  63:/usr/avr/include/avr/wdt.h ****     timer remains active even after a system reset (except a power-on
+  64:/usr/avr/include/avr/wdt.h ****     condition), using the fastest prescaler value (approximately 15
+  65:/usr/avr/include/avr/wdt.h ****     ms).  It is therefore required to turn off the watchdog early
+  66:/usr/avr/include/avr/wdt.h ****     during program startup, the datasheet recommends a sequence like
+  67:/usr/avr/include/avr/wdt.h ****     the following:
+  68:/usr/avr/include/avr/wdt.h **** 
+  69:/usr/avr/include/avr/wdt.h ****     \code
+  70:/usr/avr/include/avr/wdt.h ****     #include <stdint.h>
+  71:/usr/avr/include/avr/wdt.h ****     #include <avr/wdt.h>
+  72:/usr/avr/include/avr/wdt.h **** 
+  73:/usr/avr/include/avr/wdt.h ****     uint8_t mcusr_mirror __attribute__ ((section (".noinit")));
+  74:/usr/avr/include/avr/wdt.h **** 
+  75:/usr/avr/include/avr/wdt.h ****     void get_mcusr(void) \
+  76:/usr/avr/include/avr/wdt.h ****       __attribute__((naked)) \
+  77:/usr/avr/include/avr/wdt.h ****       __attribute__((section(".init3")));
+  78:/usr/avr/include/avr/wdt.h ****     void get_mcusr(void)
+  79:/usr/avr/include/avr/wdt.h ****     {
+  80:/usr/avr/include/avr/wdt.h ****       mcusr_mirror = MCUSR;
+  81:/usr/avr/include/avr/wdt.h ****       MCUSR = 0;
+  82:/usr/avr/include/avr/wdt.h ****       wdt_disable();
+  83:/usr/avr/include/avr/wdt.h ****     }
+  84:/usr/avr/include/avr/wdt.h ****     \endcode
+  85:/usr/avr/include/avr/wdt.h **** 
+  86:/usr/avr/include/avr/wdt.h ****     Saving the value of MCUSR in \c mcusr_mirror is only needed if the
+  87:/usr/avr/include/avr/wdt.h ****     application later wants to examine the reset source, but in particular, 
+  88:/usr/avr/include/avr/wdt.h ****     clearing the watchdog reset flag before disabling the
+  89:/usr/avr/include/avr/wdt.h ****     watchdog is required, according to the datasheet.
+  90:/usr/avr/include/avr/wdt.h **** */
+  91:/usr/avr/include/avr/wdt.h **** 
+  92:/usr/avr/include/avr/wdt.h **** /**
+  93:/usr/avr/include/avr/wdt.h ****    \ingroup avr_watchdog
+  94:/usr/avr/include/avr/wdt.h ****    Reset the watchdog timer.  When the watchdog timer is enabled,
+  95:/usr/avr/include/avr/wdt.h ****    a call to this instruction is required before the timer expires,
+  96:/usr/avr/include/avr/wdt.h ****    otherwise a watchdog-initiated device reset will occur. 
+  97:/usr/avr/include/avr/wdt.h **** */
+  98:/usr/avr/include/avr/wdt.h **** 
+  99:/usr/avr/include/avr/wdt.h **** #define wdt_reset() __asm__ __volatile__ ("wdr")
+ 100:/usr/avr/include/avr/wdt.h **** 
+ 101:/usr/avr/include/avr/wdt.h **** #ifndef __DOXYGEN__
+ 102:/usr/avr/include/avr/wdt.h **** 
+ 103:/usr/avr/include/avr/wdt.h **** #if defined(WDP3)
+ 104:/usr/avr/include/avr/wdt.h **** # define _WD_PS3_MASK       _BV(WDP3)
+ 105:/usr/avr/include/avr/wdt.h **** #else
+ 106:/usr/avr/include/avr/wdt.h **** # define _WD_PS3_MASK       0x00
+ 107:/usr/avr/include/avr/wdt.h **** #endif
+ 108:/usr/avr/include/avr/wdt.h **** 
+ 109:/usr/avr/include/avr/wdt.h **** #if defined(WDTCSR)
+ 110:/usr/avr/include/avr/wdt.h **** #  define _WD_CONTROL_REG     WDTCSR
+ 111:/usr/avr/include/avr/wdt.h **** #elif defined(WDTCR)
+ 112:/usr/avr/include/avr/wdt.h **** #  define _WD_CONTROL_REG     WDTCR
+ 113:/usr/avr/include/avr/wdt.h **** #else
+ 114:/usr/avr/include/avr/wdt.h **** #  define _WD_CONTROL_REG     WDT
+ 115:/usr/avr/include/avr/wdt.h **** #endif
+ 116:/usr/avr/include/avr/wdt.h **** 
+ 117:/usr/avr/include/avr/wdt.h **** #if defined(WDTOE)
+ 118:/usr/avr/include/avr/wdt.h **** #define _WD_CHANGE_BIT      WDTOE
+ 119:/usr/avr/include/avr/wdt.h **** #else
+ 120:/usr/avr/include/avr/wdt.h **** #define _WD_CHANGE_BIT      WDCE
+ 121:/usr/avr/include/avr/wdt.h **** #endif
+ 122:/usr/avr/include/avr/wdt.h **** 
+ 123:/usr/avr/include/avr/wdt.h **** #endif	/* !__DOXYGEN__ */
+ 124:/usr/avr/include/avr/wdt.h **** 
+ 125:/usr/avr/include/avr/wdt.h **** 
+ 126:/usr/avr/include/avr/wdt.h **** /**
+ 127:/usr/avr/include/avr/wdt.h ****    \ingroup avr_watchdog
+ 128:/usr/avr/include/avr/wdt.h ****    Enable the watchdog timer, configuring it for expiry after
+ 129:/usr/avr/include/avr/wdt.h ****    \c timeout (which is a combination of the \c WDP0 through
+ 130:/usr/avr/include/avr/wdt.h ****    \c WDP2 bits to write into the \c WDTCR register; For those devices 
+ 131:/usr/avr/include/avr/wdt.h ****    that have a \c WDTCSR register, it uses the combination of the \c WDP0 
+ 132:/usr/avr/include/avr/wdt.h ****    through \c WDP3 bits).
+ 133:/usr/avr/include/avr/wdt.h **** 
+ 134:/usr/avr/include/avr/wdt.h ****    See also the symbolic constants \c WDTO_15MS et al.
+ 135:/usr/avr/include/avr/wdt.h **** */
+ 136:/usr/avr/include/avr/wdt.h **** 
+ 137:/usr/avr/include/avr/wdt.h **** 
+ 138:/usr/avr/include/avr/wdt.h **** #if defined(__AVR_XMEGA__)
+ 139:/usr/avr/include/avr/wdt.h **** 
+ 140:/usr/avr/include/avr/wdt.h **** /*
+ 141:/usr/avr/include/avr/wdt.h ****    wdt_enable(timeout) for xmega devices
+ 142:/usr/avr/include/avr/wdt.h **** ** write signature (CCP_IOREG_gc) that enables change of protected I/O
+ 143:/usr/avr/include/avr/wdt.h ****    registers to the CCP register
+ 144:/usr/avr/include/avr/wdt.h **** ** At the same time,
+ 145:/usr/avr/include/avr/wdt.h ****    1) set WDT change enable (WDT_CEN_bm)
+ 146:/usr/avr/include/avr/wdt.h ****    2) enable WDT (WDT_ENABLE_bm)
+ 147:/usr/avr/include/avr/wdt.h ****    3) set timeout (timeout)
+ 148:/usr/avr/include/avr/wdt.h **** ** Synchronization starts when ENABLE bit of WDT is set. So, wait till it
+ 149:/usr/avr/include/avr/wdt.h ****    finishes (SYNCBUSY of STATUS register is automatically cleared after the
+ 150:/usr/avr/include/avr/wdt.h ****    sync is finished).
+ 151:/usr/avr/include/avr/wdt.h **** */
+ 152:/usr/avr/include/avr/wdt.h **** #define wdt_enable(timeout) \
+ 153:/usr/avr/include/avr/wdt.h **** do { \
+ 154:/usr/avr/include/avr/wdt.h **** uint8_t temp; \
+ 155:/usr/avr/include/avr/wdt.h **** __asm__ __volatile__ (         \
+ 156:/usr/avr/include/avr/wdt.h ****     "in __tmp_reg__, %[rampd]"              "\n\t" \
+ 157:/usr/avr/include/avr/wdt.h ****     "out %[rampd], __zero_reg__"            "\n\t" \
+ 158:/usr/avr/include/avr/wdt.h ****     "out %[ccp_reg], %[ioreg_cen_mask]"     "\n\t" \
+ 159:/usr/avr/include/avr/wdt.h ****     "sts %[wdt_reg], %[wdt_enable_timeout]" "\n\t" \
+ 160:/usr/avr/include/avr/wdt.h ****     "1:lds %[tmp], %[wdt_status_reg]"       "\n\t" \
+ 161:/usr/avr/include/avr/wdt.h ****     "sbrc %[tmp], %[wdt_syncbusy_bit]"      "\n\t" \
+ 162:/usr/avr/include/avr/wdt.h ****     "rjmp 1b"                               "\n\t" \
+ 163:/usr/avr/include/avr/wdt.h ****     "out %[rampd], __tmp_reg__"             "\n\t" \
+ 164:/usr/avr/include/avr/wdt.h ****     : [tmp]                "=r" (temp) \
+ 165:/usr/avr/include/avr/wdt.h ****     : [rampd]              "I" (_SFR_IO_ADDR(RAMPD)),      \
+ 166:/usr/avr/include/avr/wdt.h ****       [ccp_reg]            "I" (_SFR_IO_ADDR(CCP)),        \
+ 167:/usr/avr/include/avr/wdt.h ****       [ioreg_cen_mask]     "r" ((uint8_t)CCP_IOREG_gc),     \
+ 168:/usr/avr/include/avr/wdt.h ****       [wdt_reg]            "n" (_SFR_MEM_ADDR(WDT_CTRL)),   \
+ 169:/usr/avr/include/avr/wdt.h ****       [wdt_enable_timeout] "r" ((uint8_t)(WDT_CEN_bm | WDT_ENABLE_bm | timeout)), \
+ 170:/usr/avr/include/avr/wdt.h ****       [wdt_status_reg]     "n" (_SFR_MEM_ADDR(WDT_STATUS)), \
+ 171:/usr/avr/include/avr/wdt.h ****       [wdt_syncbusy_bit]   "I" (WDT_SYNCBUSY_bm)            \
+ 172:/usr/avr/include/avr/wdt.h ****     : "r0" \
+ 173:/usr/avr/include/avr/wdt.h **** ); \
+ 174:/usr/avr/include/avr/wdt.h **** } while(0)
+ 175:/usr/avr/include/avr/wdt.h **** 
+ 176:/usr/avr/include/avr/wdt.h **** #define wdt_disable() \
+ 177:/usr/avr/include/avr/wdt.h **** __asm__ __volatile__ (  \
+ 178:/usr/avr/include/avr/wdt.h ****     "in __tmp_reg__, %[rampd]"          "\n\t" \
+ 179:/usr/avr/include/avr/wdt.h ****     "out %[rampd], __zero_reg__"        "\n\t" \
+ 180:/usr/avr/include/avr/wdt.h ****     "out %[ccp_reg], %[ioreg_cen_mask]" "\n\t" \
+ 181:/usr/avr/include/avr/wdt.h ****     "sts %[wdt_reg], %[disable_mask]"   "\n\t" \
+ 182:/usr/avr/include/avr/wdt.h ****     "out %[rampd], __tmp_reg__"         "\n\t" \
+ 183:/usr/avr/include/avr/wdt.h ****     : \
+ 184:/usr/avr/include/avr/wdt.h ****     : [rampd]             "I" (_SFR_IO_ADDR(RAMPD)),    \
+ 185:/usr/avr/include/avr/wdt.h ****       [ccp_reg]           "I" (_SFR_IO_ADDR(CCP)),      \
+ 186:/usr/avr/include/avr/wdt.h ****       [ioreg_cen_mask]    "r" ((uint8_t)CCP_IOREG_gc),   \
+ 187:/usr/avr/include/avr/wdt.h ****       [wdt_reg]           "n" (_SFR_MEM_ADDR(WDT_CTRL)), \
+ 188:/usr/avr/include/avr/wdt.h ****       [disable_mask]      "r" ((uint8_t)((~WDT_ENABLE_bm) | WDT_CEN_bm)) \
+ 189:/usr/avr/include/avr/wdt.h ****     : "r0" \
+ 190:/usr/avr/include/avr/wdt.h **** );
+ 191:/usr/avr/include/avr/wdt.h **** 
+ 192:/usr/avr/include/avr/wdt.h **** #elif defined(__AVR_TINY__)
+ 193:/usr/avr/include/avr/wdt.h **** 
+ 194:/usr/avr/include/avr/wdt.h **** #define wdt_enable(value) \
+ 195:/usr/avr/include/avr/wdt.h **** __asm__ __volatile__ ( \
+ 196:/usr/avr/include/avr/wdt.h ****     "in __tmp_reg__,__SREG__" "\n\t"  \
+ 197:/usr/avr/include/avr/wdt.h ****     "cli" "\n\t"  \
+ 198:/usr/avr/include/avr/wdt.h ****     "wdr" "\n\t"  \
+ 199:/usr/avr/include/avr/wdt.h ****     "out %[CCPADDRESS],%[SIGNATURE]" "\n\t"  \
+ 200:/usr/avr/include/avr/wdt.h ****     "out %[WDTREG],%[WDVALUE]" "\n\t"  \
+ 201:/usr/avr/include/avr/wdt.h ****     "out __SREG__,__tmp_reg__" "\n\t"  \
+ 202:/usr/avr/include/avr/wdt.h ****     : /* no outputs */  \
+ 203:/usr/avr/include/avr/wdt.h ****     : [CCPADDRESS] "I" (_SFR_IO_ADDR(CCP)),  \
+ 204:/usr/avr/include/avr/wdt.h ****       [SIGNATURE] "r" ((uint8_t)0xD8), \
+ 205:/usr/avr/include/avr/wdt.h ****       [WDTREG] "I" (_SFR_IO_ADDR(_WD_CONTROL_REG)), \
+ 206:/usr/avr/include/avr/wdt.h ****       [WDVALUE] "r" ((uint8_t)((value & 0x08 ? _WD_PS3_MASK : 0x00) \
+ 207:/usr/avr/include/avr/wdt.h ****       | _BV(WDE) | (value & 0x07) )) \
+ 208:/usr/avr/include/avr/wdt.h ****     : "r16" \
+ 209:/usr/avr/include/avr/wdt.h **** )
+ 210:/usr/avr/include/avr/wdt.h **** 
+ 211:/usr/avr/include/avr/wdt.h **** #define wdt_disable() \
+ 212:/usr/avr/include/avr/wdt.h **** do { \
+ 213:/usr/avr/include/avr/wdt.h **** uint8_t temp_wd; \
+ 214:/usr/avr/include/avr/wdt.h **** __asm__ __volatile__ ( \
+ 215:/usr/avr/include/avr/wdt.h ****     "in __tmp_reg__,__SREG__" "\n\t"  \
+ 216:/usr/avr/include/avr/wdt.h ****     "cli" "\n\t"  \
+ 217:/usr/avr/include/avr/wdt.h ****     "wdr" "\n\t"  \
+ 218:/usr/avr/include/avr/wdt.h ****     "out %[CCPADDRESS],%[SIGNATURE]" "\n\t"  \
+ 219:/usr/avr/include/avr/wdt.h ****     "in  %[TEMP_WD],%[WDTREG]" "\n\t" \
+ 220:/usr/avr/include/avr/wdt.h ****     "cbr %[TEMP_WD],%[WDVALUE]" "\n\t" \
+ 221:/usr/avr/include/avr/wdt.h ****     "out %[WDTREG],%[TEMP_WD]" "\n\t" \
+ 222:/usr/avr/include/avr/wdt.h ****     "out __SREG__,__tmp_reg__" "\n\t" \
+ 223:/usr/avr/include/avr/wdt.h ****     : /*no output */ \
+ 224:/usr/avr/include/avr/wdt.h ****     : [CCPADDRESS] "I" (_SFR_IO_ADDR(CCP)), \
+ 225:/usr/avr/include/avr/wdt.h ****       [SIGNATURE] "r" ((uint8_t)0xD8), \
+ 226:/usr/avr/include/avr/wdt.h ****       [WDTREG] "I" (_SFR_IO_ADDR(_WD_CONTROL_REG)), \
+ 227:/usr/avr/include/avr/wdt.h ****       [TEMP_WD] "d" (temp_wd), \
+ 228:/usr/avr/include/avr/wdt.h ****       [WDVALUE] "n" (1 << WDE) \
+ 229:/usr/avr/include/avr/wdt.h ****     : "r16" \
+ 230:/usr/avr/include/avr/wdt.h **** ); \
+ 231:/usr/avr/include/avr/wdt.h **** }while(0)
+ 232:/usr/avr/include/avr/wdt.h **** 
+ 233:/usr/avr/include/avr/wdt.h **** #elif defined(CCP)
+ 234:/usr/avr/include/avr/wdt.h **** 
+ 235:/usr/avr/include/avr/wdt.h **** static __inline__
+ 236:/usr/avr/include/avr/wdt.h **** __attribute__ ((__always_inline__))
+ 237:/usr/avr/include/avr/wdt.h **** void wdt_enable (const uint8_t value)
+ 238:/usr/avr/include/avr/wdt.h **** {
+ 239:/usr/avr/include/avr/wdt.h **** 	if (!_SFR_IO_REG_P (CCP) && !_SFR_IO_REG_P (_WD_CONTROL_REG))
+ 240:/usr/avr/include/avr/wdt.h **** 	{
+ 241:/usr/avr/include/avr/wdt.h **** 		__asm__ __volatile__ (
+ 242:/usr/avr/include/avr/wdt.h **** 			"in __tmp_reg__,__SREG__" "\n\t"
+ 243:/usr/avr/include/avr/wdt.h **** 			"cli" "\n\t"
+ 244:/usr/avr/include/avr/wdt.h **** 			"wdr" "\n\t"
+ 245:/usr/avr/include/avr/wdt.h **** 			"sts %[CCPADDRESS],%[SIGNATURE]" "\n\t"
+ 246:/usr/avr/include/avr/wdt.h **** 			"sts %[WDTREG],%[WDVALUE]" "\n\t"
+ 247:/usr/avr/include/avr/wdt.h **** 			"out __SREG__,__tmp_reg__" "\n\t"
+ 248:/usr/avr/include/avr/wdt.h **** 			: /* no outputs */
+ 249:/usr/avr/include/avr/wdt.h **** 			: [CCPADDRESS] "n" (_SFR_MEM_ADDR(CCP)),
+ 250:/usr/avr/include/avr/wdt.h **** 			[SIGNATURE] "r" ((uint8_t)0xD8),
+ 251:/usr/avr/include/avr/wdt.h **** 			[WDTREG] "n" (_SFR_MEM_ADDR(_WD_CONTROL_REG)),
+ 252:/usr/avr/include/avr/wdt.h **** 			[WDVALUE] "r" ((uint8_t)((value & 0x08 ? _WD_PS3_MASK : 0x00)
+ 253:/usr/avr/include/avr/wdt.h **** 				| _BV(WDE) | (value & 0x07) ))
+ 254:/usr/avr/include/avr/wdt.h **** 			: "r0"
+ 255:/usr/avr/include/avr/wdt.h **** 			);
+ 256:/usr/avr/include/avr/wdt.h **** 	}
+ 257:/usr/avr/include/avr/wdt.h **** 	else if (!_SFR_IO_REG_P (CCP) && _SFR_IO_REG_P (_WD_CONTROL_REG))
+ 258:/usr/avr/include/avr/wdt.h **** 	{
+ 259:/usr/avr/include/avr/wdt.h **** 		__asm__ __volatile__ (
+ 260:/usr/avr/include/avr/wdt.h **** 			"in __tmp_reg__,__SREG__" "\n\t"
+ 261:/usr/avr/include/avr/wdt.h **** 			"cli" "\n\t"
+ 262:/usr/avr/include/avr/wdt.h **** 			"wdr" "\n\t"
+ 263:/usr/avr/include/avr/wdt.h **** 			"sts %[CCPADDRESS],%[SIGNATURE]" "\n\t"
+ 264:/usr/avr/include/avr/wdt.h **** 			"out %[WDTREG],%[WDVALUE]" "\n\t"
+ 265:/usr/avr/include/avr/wdt.h **** 			"out __SREG__,__tmp_reg__" "\n\t"
+ 266:/usr/avr/include/avr/wdt.h **** 			: /* no outputs */
+ 267:/usr/avr/include/avr/wdt.h **** 			: [CCPADDRESS] "n" (_SFR_MEM_ADDR(CCP)),
+ 268:/usr/avr/include/avr/wdt.h **** 			[SIGNATURE] "r" ((uint8_t)0xD8),
+ 269:/usr/avr/include/avr/wdt.h **** 			[WDTREG] "I" (_SFR_IO_ADDR(_WD_CONTROL_REG)),
+ 270:/usr/avr/include/avr/wdt.h **** 			[WDVALUE] "r" ((uint8_t)((value & 0x08 ? _WD_PS3_MASK : 0x00)
+ 271:/usr/avr/include/avr/wdt.h **** 				| _BV(WDE) | (value & 0x07) ))
+ 272:/usr/avr/include/avr/wdt.h **** 			: "r0"
+ 273:/usr/avr/include/avr/wdt.h **** 			);
+ 274:/usr/avr/include/avr/wdt.h **** 	}
+ 275:/usr/avr/include/avr/wdt.h **** 	else if (_SFR_IO_REG_P (CCP) && !_SFR_IO_REG_P (_WD_CONTROL_REG))
+ 276:/usr/avr/include/avr/wdt.h **** 	{
+ 277:/usr/avr/include/avr/wdt.h **** 		__asm__ __volatile__ (
+ 278:/usr/avr/include/avr/wdt.h **** 			"in __tmp_reg__,__SREG__" "\n\t"
+ 279:/usr/avr/include/avr/wdt.h **** 			"cli" "\n\t"
+ 280:/usr/avr/include/avr/wdt.h **** 			"wdr" "\n\t"
+ 281:/usr/avr/include/avr/wdt.h **** 			"out %[CCPADDRESS],%[SIGNATURE]" "\n\t"
+ 282:/usr/avr/include/avr/wdt.h **** 			"sts %[WDTREG],%[WDVALUE]" "\n\t"
+ 283:/usr/avr/include/avr/wdt.h **** 			"out __SREG__,__tmp_reg__" "\n\t"
+ 284:/usr/avr/include/avr/wdt.h **** 			: /* no outputs */
+ 285:/usr/avr/include/avr/wdt.h **** 			: [CCPADDRESS] "I" (_SFR_IO_ADDR(CCP)),
+ 286:/usr/avr/include/avr/wdt.h **** 			[SIGNATURE] "r" ((uint8_t)0xD8),
+ 287:/usr/avr/include/avr/wdt.h **** 			[WDTREG] "n" (_SFR_MEM_ADDR(_WD_CONTROL_REG)),
+ 288:/usr/avr/include/avr/wdt.h **** 			[WDVALUE] "r" ((uint8_t)((value & 0x08 ? _WD_PS3_MASK : 0x00)
+ 289:/usr/avr/include/avr/wdt.h **** 				| _BV(WDE) | (value & 0x07) ))
+ 290:/usr/avr/include/avr/wdt.h **** 			: "r0"
+ 291:/usr/avr/include/avr/wdt.h **** 			);
+ 292:/usr/avr/include/avr/wdt.h **** 	}
+ 293:/usr/avr/include/avr/wdt.h **** 	else
+ 294:/usr/avr/include/avr/wdt.h ****  	{
+ 295:/usr/avr/include/avr/wdt.h **** 		__asm__ __volatile__ (
+ 296:/usr/avr/include/avr/wdt.h **** 			"in __tmp_reg__,__SREG__" "\n\t"
+ 297:/usr/avr/include/avr/wdt.h **** 			"cli" "\n\t"
+ 298:/usr/avr/include/avr/wdt.h **** 			"wdr" "\n\t"
+ 299:/usr/avr/include/avr/wdt.h **** 			"out %[CCPADDRESS],%[SIGNATURE]" "\n\t"
+ 300:/usr/avr/include/avr/wdt.h **** 			"out %[WDTREG],%[WDVALUE]" "\n\t"
+ 301:/usr/avr/include/avr/wdt.h **** 			"out __SREG__,__tmp_reg__" "\n\t"
+ 302:/usr/avr/include/avr/wdt.h **** 			: /* no outputs */
+ 303:/usr/avr/include/avr/wdt.h **** 			: [CCPADDRESS] "I" (_SFR_IO_ADDR(CCP)),
+ 304:/usr/avr/include/avr/wdt.h **** 			[SIGNATURE] "r" ((uint8_t)0xD8),
+ 305:/usr/avr/include/avr/wdt.h **** 			[WDTREG] "I" (_SFR_IO_ADDR(_WD_CONTROL_REG)),
+ 306:/usr/avr/include/avr/wdt.h **** 			[WDVALUE] "r" ((uint8_t)((value & 0x08 ? _WD_PS3_MASK : 0x00)
+ 307:/usr/avr/include/avr/wdt.h **** 				| _BV(WDE) | (value & 0x07) ))
+ 308:/usr/avr/include/avr/wdt.h **** 			: "r0"
+ 309:/usr/avr/include/avr/wdt.h **** 			);
+ 310:/usr/avr/include/avr/wdt.h **** 	}
+ 311:/usr/avr/include/avr/wdt.h **** }
+ 312:/usr/avr/include/avr/wdt.h **** 
+ 313:/usr/avr/include/avr/wdt.h **** static __inline__
+ 314:/usr/avr/include/avr/wdt.h **** __attribute__ ((__always_inline__))
+ 315:/usr/avr/include/avr/wdt.h **** void wdt_disable (void)
+ 316:/usr/avr/include/avr/wdt.h **** {
+ 317:/usr/avr/include/avr/wdt.h **** 	if (!_SFR_IO_REG_P (CCP) && !_SFR_IO_REG_P(_WD_CONTROL_REG))
+ 318:/usr/avr/include/avr/wdt.h **** 	{
+ 319:/usr/avr/include/avr/wdt.h ****         uint8_t temp_wd;
+ 320:/usr/avr/include/avr/wdt.h ****         __asm__ __volatile__ (
+ 321:/usr/avr/include/avr/wdt.h **** 				"in __tmp_reg__,__SREG__" "\n\t"
+ 322:/usr/avr/include/avr/wdt.h **** 				"cli" "\n\t"
+ 323:/usr/avr/include/avr/wdt.h **** 				"wdr" "\n\t"
+ 324:/usr/avr/include/avr/wdt.h **** 				"sts %[CCPADDRESS],%[SIGNATURE]" "\n\t"
+ 325:/usr/avr/include/avr/wdt.h **** 				"lds %[TEMP_WD],%[WDTREG]" "\n\t"
+ 326:/usr/avr/include/avr/wdt.h **** 				"cbr %[TEMP_WD],%[WDVALUE]" "\n\t"
+ 327:/usr/avr/include/avr/wdt.h **** 				"sts %[WDTREG],%[TEMP_WD]" "\n\t"
+ 328:/usr/avr/include/avr/wdt.h **** 				"out __SREG__,__tmp_reg__" "\n\t"
+ 329:/usr/avr/include/avr/wdt.h **** 				: /*no output */
+ 330:/usr/avr/include/avr/wdt.h **** 				: [CCPADDRESS] "n" (_SFR_MEM_ADDR(CCP)),
+ 331:/usr/avr/include/avr/wdt.h **** 				[SIGNATURE] "r" ((uint8_t)0xD8),
+ 332:/usr/avr/include/avr/wdt.h **** 				[WDTREG] "n" (_SFR_MEM_ADDR(_WD_CONTROL_REG)),
+ 333:/usr/avr/include/avr/wdt.h **** 				[TEMP_WD] "d" (temp_wd),
+ 334:/usr/avr/include/avr/wdt.h **** 				[WDVALUE] "n" (1 << WDE)
+ 335:/usr/avr/include/avr/wdt.h **** 				: "r0"
+ 336:/usr/avr/include/avr/wdt.h **** 				);
+ 337:/usr/avr/include/avr/wdt.h **** 	}
+ 338:/usr/avr/include/avr/wdt.h **** 	else if (!_SFR_IO_REG_P (CCP) && _SFR_IO_REG_P(_WD_CONTROL_REG))
+ 339:/usr/avr/include/avr/wdt.h **** 	{
+ 340:/usr/avr/include/avr/wdt.h ****         uint8_t temp_wd;
+ 341:/usr/avr/include/avr/wdt.h ****         __asm__ __volatile__ (
+ 342:/usr/avr/include/avr/wdt.h **** 				"in __tmp_reg__,__SREG__" "\n\t"
+ 343:/usr/avr/include/avr/wdt.h **** 				"cli" "\n\t"
+ 344:/usr/avr/include/avr/wdt.h **** 				"wdr" "\n\t"
+ 345:/usr/avr/include/avr/wdt.h **** 				"sts %[CCPADDRESS],%[SIGNATURE]" "\n\t"
+ 346:/usr/avr/include/avr/wdt.h **** 				"in %[TEMP_WD],%[WDTREG]" "\n\t"
+ 347:/usr/avr/include/avr/wdt.h **** 				"cbr %[TEMP_WD],%[WDVALUE]" "\n\t"
+ 348:/usr/avr/include/avr/wdt.h **** 				"out %[WDTREG],%[TEMP_WD]" "\n\t"
+ 349:/usr/avr/include/avr/wdt.h **** 				"out __SREG__,__tmp_reg__" "\n\t"
+ 350:/usr/avr/include/avr/wdt.h **** 				: /*no output */
+ 351:/usr/avr/include/avr/wdt.h **** 				: [CCPADDRESS] "n" (_SFR_MEM_ADDR(CCP)),
+ 352:/usr/avr/include/avr/wdt.h **** 				[SIGNATURE] "r" ((uint8_t)0xD8),
+ 353:/usr/avr/include/avr/wdt.h **** 				[WDTREG] "I" (_SFR_IO_ADDR(_WD_CONTROL_REG)),
+ 354:/usr/avr/include/avr/wdt.h **** 				[TEMP_WD] "d" (temp_wd),
+ 355:/usr/avr/include/avr/wdt.h **** 				[WDVALUE] "n" (1 << WDE)
+ 356:/usr/avr/include/avr/wdt.h **** 				: "r0"
+ 357:/usr/avr/include/avr/wdt.h **** 				);
+ 358:/usr/avr/include/avr/wdt.h **** 	}
+ 359:/usr/avr/include/avr/wdt.h **** 	else if (_SFR_IO_REG_P (CCP) && !_SFR_IO_REG_P(_WD_CONTROL_REG))
+ 360:/usr/avr/include/avr/wdt.h **** 	{
+ 361:/usr/avr/include/avr/wdt.h ****         uint8_t temp_wd;
+ 362:/usr/avr/include/avr/wdt.h ****         __asm__ __volatile__ (
+ 363:/usr/avr/include/avr/wdt.h **** 				"in __tmp_reg__,__SREG__" "\n\t"
+ 364:/usr/avr/include/avr/wdt.h **** 				"cli" "\n\t"
+ 365:/usr/avr/include/avr/wdt.h **** 				"wdr" "\n\t"
+ 366:/usr/avr/include/avr/wdt.h **** 				"out %[CCPADDRESS],%[SIGNATURE]" "\n\t"
+ 367:/usr/avr/include/avr/wdt.h **** 				"lds %[TEMP_WD],%[WDTREG]" "\n\t"
+ 368:/usr/avr/include/avr/wdt.h **** 				"cbr %[TEMP_WD],%[WDVALUE]" "\n\t"
+ 369:/usr/avr/include/avr/wdt.h **** 				"sts %[WDTREG],%[TEMP_WD]" "\n\t"
+ 370:/usr/avr/include/avr/wdt.h **** 				"out __SREG__,__tmp_reg__" "\n\t"
+ 371:/usr/avr/include/avr/wdt.h **** 				: /*no output */
+ 372:/usr/avr/include/avr/wdt.h **** 				: [CCPADDRESS] "I" (_SFR_IO_ADDR(CCP)),
+ 373:/usr/avr/include/avr/wdt.h **** 				[SIGNATURE] "r" ((uint8_t)0xD8),
+ 374:/usr/avr/include/avr/wdt.h **** 				[WDTREG] "n" (_SFR_MEM_ADDR(_WD_CONTROL_REG)),
+ 375:/usr/avr/include/avr/wdt.h **** 				[TEMP_WD] "d" (temp_wd),
+ 376:/usr/avr/include/avr/wdt.h **** 				[WDVALUE] "n" (1 << WDE)
+ 377:/usr/avr/include/avr/wdt.h **** 				: "r0"
+ 378:/usr/avr/include/avr/wdt.h **** 				);
+ 379:/usr/avr/include/avr/wdt.h **** 	}
+ 380:/usr/avr/include/avr/wdt.h **** 	else
+ 381:/usr/avr/include/avr/wdt.h **** 	{
+ 382:/usr/avr/include/avr/wdt.h ****         uint8_t temp_wd;
+ 383:/usr/avr/include/avr/wdt.h ****         __asm__ __volatile__ (
+ 384:/usr/avr/include/avr/wdt.h **** 				"in __tmp_reg__,__SREG__" "\n\t"
+ 385:/usr/avr/include/avr/wdt.h **** 				"cli" "\n\t"
+ 386:/usr/avr/include/avr/wdt.h **** 				"wdr" "\n\t"
+ 387:/usr/avr/include/avr/wdt.h **** 				"out %[CCPADDRESS],%[SIGNATURE]" "\n\t"
+ 388:/usr/avr/include/avr/wdt.h **** 				"in %[TEMP_WD],%[WDTREG]" "\n\t"
+ 389:/usr/avr/include/avr/wdt.h **** 				"cbr %[TEMP_WD],%[WDVALUE]" "\n\t"
+ 390:/usr/avr/include/avr/wdt.h **** 				"out %[WDTREG],%[TEMP_WD]" "\n\t"
+ 391:/usr/avr/include/avr/wdt.h **** 				"out __SREG__,__tmp_reg__" "\n\t"
+ 392:/usr/avr/include/avr/wdt.h **** 				: /*no output */
+ 393:/usr/avr/include/avr/wdt.h **** 				: [CCPADDRESS] "I" (_SFR_IO_ADDR(CCP)),
+ 394:/usr/avr/include/avr/wdt.h **** 				[SIGNATURE] "r" ((uint8_t)0xD8),
+ 395:/usr/avr/include/avr/wdt.h **** 				[WDTREG] "I" (_SFR_IO_ADDR(_WD_CONTROL_REG)),
+ 396:/usr/avr/include/avr/wdt.h **** 				[TEMP_WD] "d" (temp_wd),
+ 397:/usr/avr/include/avr/wdt.h **** 				[WDVALUE] "n" (1 << WDE)
+ 398:/usr/avr/include/avr/wdt.h **** 				: "r0"
+ 399:/usr/avr/include/avr/wdt.h **** 				);
+ 400:/usr/avr/include/avr/wdt.h **** 	}
+ 401:/usr/avr/include/avr/wdt.h **** }
+ 402:/usr/avr/include/avr/wdt.h **** 
+ 403:/usr/avr/include/avr/wdt.h **** #else
+ 404:/usr/avr/include/avr/wdt.h **** 
+ 405:/usr/avr/include/avr/wdt.h **** static __inline__
+ 406:/usr/avr/include/avr/wdt.h **** __attribute__ ((__always_inline__))
+ 407:/usr/avr/include/avr/wdt.h **** void wdt_enable (const uint8_t value)
+ 408:/usr/avr/include/avr/wdt.h **** {
+ 409:/usr/avr/include/avr/wdt.h **** 	if (_SFR_IO_REG_P (_WD_CONTROL_REG))
+ 410:/usr/avr/include/avr/wdt.h **** 	{
+ 411:/usr/avr/include/avr/wdt.h **** 		__asm__ __volatile__ (
+ 412:/usr/avr/include/avr/wdt.h **** 				"in __tmp_reg__,__SREG__" "\n\t"
+ 413:/usr/avr/include/avr/wdt.h **** 				"cli" "\n\t"
+ 414:/usr/avr/include/avr/wdt.h **** 				"wdr" "\n\t"
+ 415:/usr/avr/include/avr/wdt.h **** 				"out %0, %1" "\n\t"
+ 416:/usr/avr/include/avr/wdt.h **** 				"out __SREG__,__tmp_reg__" "\n\t"
+ 417:/usr/avr/include/avr/wdt.h **** 				"out %0, %2" "\n \t"
+ 418:/usr/avr/include/avr/wdt.h **** 				: /* no outputs */
+ 419:/usr/avr/include/avr/wdt.h **** 				: "I" (_SFR_IO_ADDR(_WD_CONTROL_REG)),
+ 420:/usr/avr/include/avr/wdt.h **** 				"r" ((uint8_t)(_BV(_WD_CHANGE_BIT) | _BV(WDE))),
+ 421:/usr/avr/include/avr/wdt.h **** 				"r" ((uint8_t) ((value & 0x08 ? _WD_PS3_MASK : 0x00) |
+ 422:/usr/avr/include/avr/wdt.h **** 						_BV(WDE) | (value & 0x07)) )
+ 423:/usr/avr/include/avr/wdt.h **** 				: "r0"
+ 424:/usr/avr/include/avr/wdt.h **** 		);
+ 425:/usr/avr/include/avr/wdt.h **** 	}
+ 426:/usr/avr/include/avr/wdt.h **** 	else
+ 427:/usr/avr/include/avr/wdt.h **** 	{
+ 428:/usr/avr/include/avr/wdt.h **** 		__asm__ __volatile__ (
+  56               		.loc 3 428 0
+  57 0032 88E1      		ldi r24,lo8(24)
+  58 0034 9CE0      		ldi r25,lo8(12)
+  59               	/* #APP */
+  60               	 ;  428 "/usr/avr/include/avr/wdt.h" 1
+  61 0036 0FB6      		in __tmp_reg__,__SREG__
+  62 0038 F894      		cli
+  63 003a A895      		wdr
+  64 003c 8093 6000 		sts 96, r24
+  65 0040 0FBE      		out __SREG__,__tmp_reg__
+  66 0042 9093 6000 		sts 96, r25
+  67               	 	
+  68               	 ;  0 "" 2
+  69               	/* #NOAPP */
+  70               	.L2:
+  71 0046 00C0      		rjmp .L2
+  72               	.LBE12:
+  73               	.LBE11:
+  74               		.cfi_endproc
+  75               	.LFE102:
+  77               		.section	.init3,"ax",@progbits
+  78               	.global	bootloader_jump_after_watchdog_reset
+  80               	bootloader_jump_after_watchdog_reset:
+  81               	.LFB103:
+ 170:./tmk_core/common/avr/bootloader.c ****         wdt_enable(WDTO_250MS);
+ 171:./tmk_core/common/avr/bootloader.c ****         for (;;);
+ 172:./tmk_core/common/avr/bootloader.c ****     #endif
+ 173:./tmk_core/common/avr/bootloader.c **** 
+ 174:./tmk_core/common/avr/bootloader.c **** }
+ 175:./tmk_core/common/avr/bootloader.c **** 
+ 176:./tmk_core/common/avr/bootloader.c **** #ifdef __AVR_ATmega32A__
+ 177:./tmk_core/common/avr/bootloader.c ****     // MCUSR is actually called MCUCSR in ATmega32A
+ 178:./tmk_core/common/avr/bootloader.c ****     #define MCUSR MCUCSR
+ 179:./tmk_core/common/avr/bootloader.c **** #endif
+ 180:./tmk_core/common/avr/bootloader.c **** 
+ 181:./tmk_core/common/avr/bootloader.c **** /* this runs before main() */
+ 182:./tmk_core/common/avr/bootloader.c **** void bootloader_jump_after_watchdog_reset(void) __attribute__ ((used, naked, section (".init3")));
+ 183:./tmk_core/common/avr/bootloader.c **** void bootloader_jump_after_watchdog_reset(void)
+ 184:./tmk_core/common/avr/bootloader.c **** {
+  82               		.loc 1 184 0
+  83               		.cfi_startproc
+  84               	/* prologue: naked */
+  85               	/* frame size = 0 */
+  86               	/* stack size = 0 */
+  87               	.L__stack_usage = 0
+ 185:./tmk_core/common/avr/bootloader.c ****     #ifndef BOOTLOADER_HALFKAY
+ 186:./tmk_core/common/avr/bootloader.c ****         if ((MCUSR & (1<<WDRF)) && reset_key == BOOTLOADER_RESET_KEY) {
+  88               		.loc 1 186 0
+  89 0000 04B6      		in __tmp_reg__,0x34
+  90 0002 03FE      		sbrs __tmp_reg__,3
+  91 0004 00C0      		rjmp .L3
+  92               		.loc 1 186 0 is_stmt 0 discriminator 1
+  93 0006 8091 0000 		lds r24,reset_key
+  94 000a 9091 0000 		lds r25,reset_key+1
+  95 000e A091 0000 		lds r26,reset_key+2
+  96 0012 B091 0000 		lds r27,reset_key+3
+  97 0016 8730      		cpi r24,7
+  98 0018 904B      		sbci r25,-80
+  99 001a A740      		sbci r26,7
+ 100 001c B04B      		sbci r27,-80
+ 101 001e 01F4      		brne .L3
+ 187:./tmk_core/common/avr/bootloader.c ****             reset_key = 0;
+ 102               		.loc 1 187 0 is_stmt 1
+ 103 0020 1092 0000 		sts reset_key,__zero_reg__
+ 104 0024 1092 0000 		sts reset_key+1,__zero_reg__
+ 105 0028 1092 0000 		sts reset_key+2,__zero_reg__
+ 106 002c 1092 0000 		sts reset_key+3,__zero_reg__
+ 188:./tmk_core/common/avr/bootloader.c **** 
+ 189:./tmk_core/common/avr/bootloader.c ****             // My custom USBasploader requires this to come up.
+ 190:./tmk_core/common/avr/bootloader.c ****             MCUSR = 0;
+ 107               		.loc 1 190 0
+ 108 0030 14BE      		out 0x34,__zero_reg__
+ 191:./tmk_core/common/avr/bootloader.c **** 
+ 192:./tmk_core/common/avr/bootloader.c ****             // Seems like Teensy halfkay loader requires clearing WDRF and disabling watchdog.
+ 193:./tmk_core/common/avr/bootloader.c ****             MCUSR &= ~(1<<WDRF);
+ 109               		.loc 1 193 0
+ 110 0032 84B7      		in r24,0x34
+ 111 0034 877F      		andi r24,lo8(-9)
+ 112 0036 84BF      		out 0x34,r24
+ 113               	.LBB13:
+ 114               	.LBB14:
+ 429:/usr/avr/include/avr/wdt.h **** 				"in __tmp_reg__,__SREG__" "\n\t"
+ 430:/usr/avr/include/avr/wdt.h **** 				"cli" "\n\t"
+ 431:/usr/avr/include/avr/wdt.h **** 				"wdr" "\n\t"
+ 432:/usr/avr/include/avr/wdt.h **** 				"sts %0, %1" "\n\t"
+ 433:/usr/avr/include/avr/wdt.h **** 				"out __SREG__,__tmp_reg__" "\n\t"
+ 434:/usr/avr/include/avr/wdt.h **** 				"sts %0, %2" "\n \t"
+ 435:/usr/avr/include/avr/wdt.h **** 				: /* no outputs */
+ 436:/usr/avr/include/avr/wdt.h **** 				: "n" (_SFR_MEM_ADDR(_WD_CONTROL_REG)),
+ 437:/usr/avr/include/avr/wdt.h **** 				"r" ((uint8_t)(_BV(_WD_CHANGE_BIT) | _BV(WDE))),
+ 438:/usr/avr/include/avr/wdt.h **** 				"r" ((uint8_t) ((value & 0x08 ? _WD_PS3_MASK : 0x00) |
+ 439:/usr/avr/include/avr/wdt.h **** 						_BV(WDE) | (value & 0x07)) )
+ 440:/usr/avr/include/avr/wdt.h **** 				: "r0"
+ 441:/usr/avr/include/avr/wdt.h **** 		);
+ 442:/usr/avr/include/avr/wdt.h **** 	}
+ 443:/usr/avr/include/avr/wdt.h **** }
+ 444:/usr/avr/include/avr/wdt.h **** 
+ 445:/usr/avr/include/avr/wdt.h **** static __inline__
+ 446:/usr/avr/include/avr/wdt.h **** __attribute__ ((__always_inline__))
+ 447:/usr/avr/include/avr/wdt.h **** void wdt_disable (void)
+ 448:/usr/avr/include/avr/wdt.h **** {
+ 449:/usr/avr/include/avr/wdt.h **** 	if (_SFR_IO_REG_P (_WD_CONTROL_REG))
+ 450:/usr/avr/include/avr/wdt.h **** 	{
+ 451:/usr/avr/include/avr/wdt.h ****         uint8_t register temp_reg;
+ 452:/usr/avr/include/avr/wdt.h **** 		__asm__ __volatile__ (
+ 453:/usr/avr/include/avr/wdt.h **** 				"in __tmp_reg__,__SREG__"    "\n\t"
+ 454:/usr/avr/include/avr/wdt.h **** 				"cli"                        "\n\t"
+ 455:/usr/avr/include/avr/wdt.h **** 				"wdr"                        "\n\t"
+ 456:/usr/avr/include/avr/wdt.h **** 				"in  %[TEMPREG],%[WDTREG]"   "\n\t"
+ 457:/usr/avr/include/avr/wdt.h **** 				"ori %[TEMPREG],%[WDCE_WDE]" "\n\t"
+ 458:/usr/avr/include/avr/wdt.h **** 				"out %[WDTREG],%[TEMPREG]"   "\n\t"
+ 459:/usr/avr/include/avr/wdt.h **** 				"out %[WDTREG],__zero_reg__" "\n\t"
+ 460:/usr/avr/include/avr/wdt.h **** 				"out __SREG__,__tmp_reg__"   "\n\t"
+ 461:/usr/avr/include/avr/wdt.h **** 				: [TEMPREG] "=d" (temp_reg)
+ 462:/usr/avr/include/avr/wdt.h **** 				: [WDTREG]  "I"  (_SFR_IO_ADDR(_WD_CONTROL_REG)),
+ 463:/usr/avr/include/avr/wdt.h **** 				[WDCE_WDE]  "n"  ((uint8_t)(_BV(_WD_CHANGE_BIT) | _BV(WDE)))
+ 464:/usr/avr/include/avr/wdt.h **** 				: "r0"
+ 465:/usr/avr/include/avr/wdt.h **** 		);
+ 466:/usr/avr/include/avr/wdt.h **** 	}
+ 467:/usr/avr/include/avr/wdt.h **** 	else
+ 468:/usr/avr/include/avr/wdt.h **** 	{
+ 469:/usr/avr/include/avr/wdt.h ****         uint8_t register temp_reg;
+ 470:/usr/avr/include/avr/wdt.h **** 		__asm__ __volatile__ (
+ 115               		.loc 3 470 0
+ 116               	/* #APP */
+ 117               	 ;  470 "/usr/avr/include/avr/wdt.h" 1
+ 118 0038 0FB6      		in __tmp_reg__,__SREG__
+ 119 003a F894      		cli
+ 120 003c A895      		wdr
+ 121 003e 8091 6000 		lds r24,96
+ 122 0042 8861      		ori r24,24
+ 123 0044 8093 6000 		sts 96,r24
+ 124 0048 1092 6000 		sts 96,__zero_reg__
+ 125 004c 0FBE      		out __SREG__,__tmp_reg__
+ 126               		
+ 127               	 ;  0 "" 2
+ 128               	/* #NOAPP */
+ 129               	.LBE14:
+ 130               	.LBE13:
+ 194:./tmk_core/common/avr/bootloader.c ****             wdt_disable();
+ 195:./tmk_core/common/avr/bootloader.c **** 
+ 196:./tmk_core/common/avr/bootloader.c **** 
+ 197:./tmk_core/common/avr/bootloader.c ****             // This is compled into 'icall', address should be in word unit, not byte.
+ 198:./tmk_core/common/avr/bootloader.c ****             #ifdef BOOTLOADER_SIZE
+ 199:./tmk_core/common/avr/bootloader.c ****                 ((void (*)(void))( (FLASH_SIZE - BOOTLOADER_SIZE) >> 1))();
+ 131               		.loc 1 199 0
+ 132 004e E0E0      		ldi r30,0
+ 133 0050 FFE3      		ldi r31,lo8(63)
+ 134 0052 0995      		icall
+ 135               	.LVL3:
+ 136               	.L3:
+ 137               	/* epilogue start */
+ 200:./tmk_core/common/avr/bootloader.c ****             #else
+ 201:./tmk_core/common/avr/bootloader.c ****                 asm("ijmp" :: "z" (bootloader_start));
+ 202:./tmk_core/common/avr/bootloader.c ****             #endif
+ 203:./tmk_core/common/avr/bootloader.c ****         }
+ 204:./tmk_core/common/avr/bootloader.c ****     #endif
+ 205:./tmk_core/common/avr/bootloader.c **** }
+ 138               		.loc 1 205 0
+ 139               		.cfi_endproc
+ 140               	.LFE103:
+ 142               	.global	reset_key
+ 143               		.section	.noinit,"aw",@nobits
+ 146               	reset_key:
+ 147 0000 0000 0000 		.zero	4
+ 148               		.text
+ 149               	.Letext0:
+ 150               		.file 4 "/usr/avr/include/stdint.h"
+ 151               		.file 5 "./lib/lufa/LUFA/Drivers/USB/Core/AVR8/../StdRequestType.h"
+ 152               		.file 6 "./lib/lufa/LUFA/Drivers/USB/Core/AVR8/../DeviceStandardReq.h"
+ 153               		.file 7 "./lib/lufa/LUFA/Drivers/USB/Core/USBTask.h"
+ 154               		.file 8 "./lib/lufa/LUFA/Drivers/USB/Core/HostStandardReq.h"
+ 155               		.file 9 "/usr/avr/include/stdio.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 bootloader.c
+     /tmp/cce5qEYC.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/cce5qEYC.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/cce5qEYC.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/cce5qEYC.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/cce5qEYC.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/cce5qEYC.s:13     .text.bootloader_jump:0000000000000000 bootloader_jump
+     /tmp/cce5qEYC.s:146    .noinit:0000000000000000 reset_key
+     /tmp/cce5qEYC.s:80     .init3:0000000000000000 bootloader_jump_after_watchdog_reset
+
+NO UNDEFINED SYMBOLS

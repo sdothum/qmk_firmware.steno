@@ -1,0 +1,1081 @@
+   1               		.file	"keymap.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text.clear_layers,"ax",@progbits
+  11               	.global	clear_layers
+  13               	clear_layers:
+  14               	.LFB110:
+  15               		.file 1 "keyboards/splitography/keymaps/dvorak/keymap.c"
+   1:keyboards/splitography/keymaps/dvorak/keymap.c **** /* Copyright 2017 REPLACE_WITH_YOUR_NAME
+   2:keyboards/splitography/keymaps/dvorak/keymap.c ****  *
+   3:keyboards/splitography/keymaps/dvorak/keymap.c ****  * This program is free software: you can redistribute it and/or modify
+   4:keyboards/splitography/keymaps/dvorak/keymap.c ****  * it under the terms of the GNU General Public License as published by
+   5:keyboards/splitography/keymaps/dvorak/keymap.c ****  * the Free Software Foundation, either version 2 of the License, or
+   6:keyboards/splitography/keymaps/dvorak/keymap.c ****  * (at your option) any later version.
+   7:keyboards/splitography/keymaps/dvorak/keymap.c ****  *
+   8:keyboards/splitography/keymaps/dvorak/keymap.c ****  * This program is distributed in the hope that it will be useful,
+   9:keyboards/splitography/keymaps/dvorak/keymap.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  10:keyboards/splitography/keymaps/dvorak/keymap.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  11:keyboards/splitography/keymaps/dvorak/keymap.c ****  * GNU General Public License for more details.
+  12:keyboards/splitography/keymaps/dvorak/keymap.c ****  *
+  13:keyboards/splitography/keymaps/dvorak/keymap.c ****  * You should have received a copy of the GNU General Public License
+  14:keyboards/splitography/keymaps/dvorak/keymap.c ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  15:keyboards/splitography/keymaps/dvorak/keymap.c ****  */
+  16:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+  17:keyboards/splitography/keymaps/dvorak/keymap.c **** // This is the canonical layout file for the Quantum project. If you want to add another keyboard,
+  18:keyboards/splitography/keymaps/dvorak/keymap.c **** // this is the style you want to emulate.
+  19:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+  20:keyboards/splitography/keymaps/dvorak/keymap.c **** // To flash steno firmware
+  21:keyboards/splitography/keymaps/dvorak/keymap.c **** // ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+  22:keyboards/splitography/keymaps/dvorak/keymap.c **** //   Reset keyboard or press hw reset button on base (hole)
+  23:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+  24:keyboards/splitography/keymaps/dvorak/keymap.c **** //   cd qmk_firmware/keyboards/steno
+  25:keyboards/splitography/keymaps/dvorak/keymap.c **** //   sudo make KEYMAP=sdothum dfu
+  26:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+  27:keyboards/splitography/keymaps/dvorak/keymap.c **** //   sudo make clean          (good practice before flashing)
+  28:keyboards/splitography/keymaps/dvorak/keymap.c **** //   sudo make KEYMAP=<...>   (to compile check)
+  29:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+  30:keyboards/splitography/keymaps/dvorak/keymap.c **** // Package requirements (for arch linux)
+  31:keyboards/splitography/keymaps/dvorak/keymap.c **** // ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+  32:keyboards/splitography/keymaps/dvorak/keymap.c **** //   avr-gcc-atmel
+  33:keyboards/splitography/keymaps/dvorak/keymap.c **** //   avr-libc-atmel
+  34:keyboards/splitography/keymaps/dvorak/keymap.c **** //   dfu-programmer
+  35:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+  36:keyboards/splitography/keymaps/dvorak/keymap.c **** // Code
+  37:keyboards/splitography/keymaps/dvorak/keymap.c **** // ▔▔▔▔
+  38:keyboards/splitography/keymaps/dvorak/keymap.c **** //   This source is shamelessly based on the "default" steno layout
+  39:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+  40:keyboards/splitography/keymaps/dvorak/keymap.c **** //   #ifdef/#endif block structures are not indented, as syntax highlighting
+  41:keyboards/splitography/keymaps/dvorak/keymap.c **** //   in vim is sufficient for identification
+  42:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+  43:keyboards/splitography/keymaps/dvorak/keymap.c **** //   c++ commenting style is used throughout
+  44:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+  45:keyboards/splitography/keymaps/dvorak/keymap.c **** #include "config.h"
+  46:keyboards/splitography/keymaps/dvorak/keymap.c **** #include "splitography.h"
+  47:keyboards/splitography/keymaps/dvorak/keymap.c **** #include "action_layer.h"
+  48:keyboards/splitography/keymaps/dvorak/keymap.c **** #include "keymap_steno.h"
+  49:keyboards/splitography/keymaps/dvorak/keymap.c **** #include "eeconfig.h"
+  50:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+  51:keyboards/splitography/keymaps/dvorak/keymap.c **** extern keymap_config_t keymap_config;
+  52:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+  53:keyboards/splitography/keymaps/dvorak/keymap.c **** enum splitography_layers {
+  54:keyboards/splitography/keymaps/dvorak/keymap.c ****   _DVORAK = 0
+  55:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,_TXBOLT
+  56:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,_PLOVER
+  57:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,_BLUE
+  58:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,_ORANGE
+  59:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,_GREEN
+  60:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,_NUM
+  61:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,_END_LAYERS
+  62:keyboards/splitography/keymaps/dvorak/keymap.c **** };
+  63:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+  64:keyboards/splitography/keymaps/dvorak/keymap.c **** enum splitography_keycodes {
+  65:keyboards/splitography/keymaps/dvorak/keymap.c ****   DVORAK = SAFE_RANGE
+  66:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,DVORAK1
+  67:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,DVORAK2
+  68:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,TXBOLT
+  69:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,PLOVER
+  70:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,BLUE
+  71:keyboards/splitography/keymaps/dvorak/keymap.c ****  ,ORANGE
+  72:keyboards/splitography/keymaps/dvorak/keymap.c **** };
+  73:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+  74:keyboards/splitography/keymaps/dvorak/keymap.c **** // keycodes
+  75:keyboards/splitography/keymaps/dvorak/keymap.c **** #define ___x___ KC_TRNS
+  76:keyboards/splitography/keymaps/dvorak/keymap.c **** #ifdef _______
+  77:keyboards/splitography/keymaps/dvorak/keymap.c **** #undef _______
+  78:keyboards/splitography/keymaps/dvorak/keymap.c **** #endif
+  79:keyboards/splitography/keymaps/dvorak/keymap.c **** #define _______ KC_NO
+  80:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+  81:keyboards/splitography/keymaps/dvorak/keymap.c **** #define ST_BOLT QK_STENO_BOLT
+  82:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+  83:keyboards/splitography/keymaps/dvorak/keymap.c **** #define COPY    LCTL(KC_C)
+  84:keyboards/splitography/keymaps/dvorak/keymap.c **** #define CUT     LCTL(KC_X)
+  85:keyboards/splitography/keymaps/dvorak/keymap.c **** #define PASTE   LCTL(KC_V)
+  86:keyboards/splitography/keymaps/dvorak/keymap.c **** #define UNDO    LCTL(KC_Z)
+  87:keyboards/splitography/keymaps/dvorak/keymap.c **** #define TG_NUM  TG(_NUM)
+  88:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+  89:keyboards/splitography/keymaps/dvorak/keymap.c **** const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+  90:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+  91:keyboards/splitography/keymaps/dvorak/keymap.c **** // ...................................................................... Dvorak
+  92:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+  93:keyboards/splitography/keymaps/dvorak/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/1b04ce6be0cee6e5d2998b2a8efb8b09
+  94:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+  95:keyboards/splitography/keymaps/dvorak/keymap.c ****   // ,-----------------------------------------------------------------------------------.
+  96:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |  Esc |   "  |   ,  |   .  |   P  |   Y  |   F  |   G  |   C  |   R  |   L  | Bksp |
+  97:keyboards/splitography/keymaps/dvorak/keymap.c ****   // -------|------+------+------+------+------+------+------+------+------+-------------|
+  98:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |  Alt |   A  |   O  |   E  |   U  |   I  |   D  |   H  |   T  |   N  |   S  | Enter|
+  99:keyboards/splitography/keymaps/dvorak/keymap.c ****   // -------|------+------+------+------+------+------+------+------+------+-------------|
+ 100:keyboards/splitography/keymaps/dvorak/keymap.c ****   // | Shift|   ;  |   Q  |   J  |   K  |   X  |   B  |   M  |   W  |   V  |   Z  |  GUI |
+ 101:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |------+------+------+------+------+------+------+------+------+------+------+------|
+ 102:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |                           |Orange| Blue | Space| Ctrl |                           |
+ 103:keyboards/splitography/keymaps/dvorak/keymap.c ****   // `-----------------------------------------------------------------------------------'
+ 104:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 105:keyboards/splitography/keymaps/dvorak/keymap.c ****   [_DVORAK] = {
+ 106:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_ESC,  KC_QUOT, KC_COMM, KC_DOT,  KC_P,    KC_Y,    KC_F,    KC_G,    KC_C,    KC_R,    KC_L
+ 107:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_LALT, KC_A,    KC_O,    KC_E,    KC_U,    KC_I,    KC_D,    KC_H,    KC_T,    KC_N,    KC_S
+ 108:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_LSFT, KC_SCLN, KC_Q,    KC_J,    KC_K,    KC_X,    KC_B,    KC_M,    KC_W,    KC_V,    KC_Z
+ 109:keyboards/splitography/keymaps/dvorak/keymap.c ****     {_______, _______, _______, _______, ORANGE,  BLUE,    KC_SPC,  KC_LCTL, _______, _______, ____
+ 110:keyboards/splitography/keymaps/dvorak/keymap.c ****   },
+ 111:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 112:keyboards/splitography/keymaps/dvorak/keymap.c **** // .................................................................. Blue Layer
+ 113:keyboards/splitography/keymaps/dvorak/keymap.c **** //_______,
+ 114:keyboards/splitography/keymaps/dvorak/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/054b8bc0e31971bb962ea1c781232e0b
+ 115:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 116:keyboards/splitography/keymaps/dvorak/keymap.c ****   // .-----------------------------------------------------------------------------------.
+ 117:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |   `  |   1  |   2  |   3  |   4  |   5  |   6  |   7  |   8  |   9  |   0  |      |
+ 118:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 119:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |  Alt | Stop | Prev | Play | Next | +Vol |      |      |      |   [  |   ]  |   /  |
+ 120:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 121:keyboards/splitography/keymaps/dvorak/keymap.c ****   // | Shift| Undo |  Cut | Copy | Paste| -Vol | Mute |      |      |   -  |   =  |  GUI |
+ 122:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 123:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |                           |Orange|  f() |  Del | Ctrl |                           |
+ 124:keyboards/splitography/keymaps/dvorak/keymap.c ****   // '-----------------------------------------------------------------------------------'
+ 125:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 126:keyboards/splitography/keymaps/dvorak/keymap.c ****   [_BLUE] = {
+ 127:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0
+ 128:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_LALT, KC_MSTP, KC_MPRV, KC_MPLY, KC_MNXT, KC_VOLU, _______, _______, _______, KC_LBRC, KC_R
+ 129:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_LSFT, UNDO,    CUT,     COPY,    PASTE,   KC_VOLD, KC_MUTE, _______, _______, KC_MINS, KC_E
+ 130:keyboards/splitography/keymaps/dvorak/keymap.c ****     {_______, _______, _______, _______, ORANGE,  ___x___, KC_DEL,  KC_LCTL, _______, _______, ____
+ 131:keyboards/splitography/keymaps/dvorak/keymap.c ****   },
+ 132:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 133:keyboards/splitography/keymaps/dvorak/keymap.c **** // ................................................................ Orange Layer
+ 134:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+ 135:keyboards/splitography/keymaps/dvorak/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/83ccc7c3faa78b1f67f6fef65063a248
+ 136:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 137:keyboards/splitography/keymaps/dvorak/keymap.c ****   // .-----------------------------------------------------------------------------------.
+ 138:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |Plover|  F1  |  F2  |  F3  |  F4  |      |  App | PrScr|ScrLck| Pause|      |      |
+ 139:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 140:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |  Alt |  F5  |  F6  |  F7  |  F8  |      |      |Insert| Home | PgUp |      |      |
+ 141:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 142:keyboards/splitography/keymaps/dvorak/keymap.c ****   // | Shift|  F9  |  F10 |  F11 |  F12 |      |      |  Del |  End | PgDn |   \  |  GUI |
+ 143:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 144:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |                           |  f() | Blue |  Tab | Ctrl |                           |
+ 145:keyboards/splitography/keymaps/dvorak/keymap.c ****   // '-----------------------------------------------------------------------------------'
+ 146:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 147:keyboards/splitography/keymaps/dvorak/keymap.c ****   [_ORANGE] = {
+ 148:keyboards/splitography/keymaps/dvorak/keymap.c ****     {PLOVER,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   _______, KC_APP,  KC_PSCR, KC_SLCK, KC_PAUS, ____
+ 149:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_LALT, KC_F5,   KC_F6,   KC_F7,   KC_F8,   _______, _______, KC_INS,  KC_HOME, KC_PGUP, ____
+ 150:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_LSFT, KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______, _______, KC_DEL,  KC_END,  KC_PGDN, KC_B
+ 151:keyboards/splitography/keymaps/dvorak/keymap.c ****     {_______, _______, _______, _______, ___x___, BLUE,    KC_TAB,  KC_LCTL, _______, _______, ____
+ 152:keyboards/splitography/keymaps/dvorak/keymap.c ****   },
+ 153:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 154:keyboards/splitography/keymaps/dvorak/keymap.c **** // ................................................................. Green Layer
+ 155:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+ 156:keyboards/splitography/keymaps/dvorak/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/bc7902f1eada4d7d34d3445aa1eccdab
+ 157:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 158:keyboards/splitography/keymaps/dvorak/keymap.c ****   // .-----------------------------------------------------------------------------------.
+ 159:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |TxBolt|      |      |      |      |Scroll|   /  |   7  |   8  |   9  |   -  |      |
+ 160:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 161:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |  Alt | Home |  Up  |  End | PgUp | Caps |   *  |   4  |   5  |   6  |   +  | Enter|
+ 162:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 163:keyboards/splitography/keymaps/dvorak/keymap.c ****   // | Shift| Left | Down | Right| PgDn |  Num |   0  |   1  |   2  |   3  |      |  GUI |
+ 164:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 165:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |                           |  f() |  f() |  --  | Ctrl |                           |
+ 166:keyboards/splitography/keymaps/dvorak/keymap.c ****   // '-----------------------------------------------------------------------------------'
+ 167:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 168:keyboards/splitography/keymaps/dvorak/keymap.c ****   [_GREEN] = {
+ 169:keyboards/splitography/keymaps/dvorak/keymap.c ****     {TXBOLT,  _______, _______, _______, _______, KC_SLCK, KC_PSLS, KC_P7,   KC_P8,   KC_P9,   KC_M
+ 170:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_LALT, KC_HOME, KC_UP,   KC_END,  KC_PGUP, KC_CAPS, KC_PAST, KC_P4,   KC_P5,   KC_P6,   KC_P
+ 171:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_LSFT, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, TG_NUM,  KC_P0,   KC_P1,   KC_P2,   KC_P3,   ____
+ 172:keyboards/splitography/keymaps/dvorak/keymap.c ****     {_______, _______, _______, _______, ___x___, ___x___, _______, KC_LCTL, _______, _______, ____
+ 173:keyboards/splitography/keymaps/dvorak/keymap.c ****   },
+ 174:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 175:keyboards/splitography/keymaps/dvorak/keymap.c **** // ................................................................... Num Layer
+ 176:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+ 177:keyboards/splitography/keymaps/dvorak/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/bc7902f1eada4d7d34d3445aa1eccdab
+ 178:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 179:keyboards/splitography/keymaps/dvorak/keymap.c ****   // .-----------------------------------------------------------------------------------.
+ 180:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |      |      |      |      |      |      |   /  |   7  |   8  |   9  |   -  |      |
+ 181:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 182:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |  Alt | Home |  Up  |  End | PgUp |      |   *  |   4  |   5  |   6  |   +  | Enter|
+ 183:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 184:keyboards/splitography/keymaps/dvorak/keymap.c ****   // | Shift| Left | Down | Right| PgDn |  f() |   0  |   1  |   2  |   3  |      |  GUI |
+ 185:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 186:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |                           |  --  |  --  |  --  | Ctrl |                           |
+ 187:keyboards/splitography/keymaps/dvorak/keymap.c ****   // '-----------------------------------------------------------------------------------'
+ 188:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 189:keyboards/splitography/keymaps/dvorak/keymap.c ****   [_NUM] = {
+ 190:keyboards/splitography/keymaps/dvorak/keymap.c ****     {_______, _______, _______, _______, _______, _______, KC_PSLS, KC_P7,   KC_P8,   KC_P9,   KC_P
+ 191:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_LALT, KC_HOME, KC_UP,   KC_END,  KC_PGUP, _______, KC_PAST, KC_P4,   KC_P5,   KC_P6,   KC_P
+ 192:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_LSFT, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, DVORAK,  KC_P0,   KC_P1,   KC_P2,   KC_P3,   ____
+ 193:keyboards/splitography/keymaps/dvorak/keymap.c ****     {_______, _______, _______, _______, _______, _______, _______, KC_LCTL, _______, _______, ____
+ 194:keyboards/splitography/keymaps/dvorak/keymap.c ****   },
+ 195:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 196:keyboards/splitography/keymaps/dvorak/keymap.c **** // ...................................................................... Plover
+ 197:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+ 198:keyboards/splitography/keymaps/dvorak/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/27b8f8649393a8ba4071ba946a9306f4
+ 199:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 200:keyboards/splitography/keymaps/dvorak/keymap.c ****   // ,-----------------------------------------------------------------------------------.
+ 201:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |   1  |   1  |   1  |   1  |   1  |   1  |   1  |   1  |   1  |   1  |   1  |   1  |
+ 202:keyboards/splitography/keymaps/dvorak/keymap.c ****   // +-------------+------+------+------+------+------+------+------+------+------+------|
+ 203:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |Dvorak|   S  |   T  |   P  |   H  |   *  |   *  |   F  |   P  |   L  |   T  |   D  |
+ 204:keyboards/splitography/keymaps/dvorak/keymap.c ****   // +------|------+------+------+------+------+------+------+------+------+------+------|
+ 205:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |Dvorak|   S  |   K  |   W  |   R  |   *  |   *  |   R  |   B  |   G  |   S  |   Z  |
+ 206:keyboards/splitography/keymaps/dvorak/keymap.c ****   // +------+------+------+------+------+------+------+------+------+------+------+------|
+ 207:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |                           |   A  |   O  |   E  |   U  |                           |
+ 208:keyboards/splitography/keymaps/dvorak/keymap.c ****   // `-----------------------------------------------------------------------------------'
+ 209:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 210:keyboards/splitography/keymaps/dvorak/keymap.c ****   [_PLOVER] = {
+ 211:keyboards/splitography/keymaps/dvorak/keymap.c ****     {KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1
+ 212:keyboards/splitography/keymaps/dvorak/keymap.c ****     {DVORAK1, KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P
+ 213:keyboards/splitography/keymaps/dvorak/keymap.c ****     {DVORAK2, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_S
+ 214:keyboards/splitography/keymaps/dvorak/keymap.c ****     {_______, _______, _______, _______, KC_C,    KC_V,    KC_N,    KC_M,    _______, _______, ____
+ 215:keyboards/splitography/keymaps/dvorak/keymap.c ****   },
+ 216:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 217:keyboards/splitography/keymaps/dvorak/keymap.c **** // ...................................................................... TxBolt
+ 218:keyboards/splitography/keymaps/dvorak/keymap.c **** //
+ 219:keyboards/splitography/keymaps/dvorak/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/27b8f8649393a8ba4071ba946a9306f4
+ 220:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 221:keyboards/splitography/keymaps/dvorak/keymap.c ****   // ,-----------------------------------------------------------------------------------.
+ 222:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |
+ 223:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |------+------+------+------+------+-------------+------+------+------+------+------|
+ 224:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |Dvorak|   S  |   T  |   P  |   H  |   *  |   *  |   F  |   P  |   L  |   T  |   D  |
+ 225:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |------+------+------+------+------+------|------+------+------+------+------+------|
+ 226:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |Dvorak|   S  |   K  |   W  |   R  |   *  |   *  |   R  |   B  |   G  |   S  |   Z  |
+ 227:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |------+------+------+------+------+------+------+------+------+------+------+------|
+ 228:keyboards/splitography/keymaps/dvorak/keymap.c ****   // |                           |   A  |   O  |   E  |   U  |                           |
+ 229:keyboards/splitography/keymaps/dvorak/keymap.c ****   // `-----------------------------------------------------------------------------------'
+ 230:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 231:keyboards/splitography/keymaps/dvorak/keymap.c ****   [_TXBOLT] = {
+ 232:keyboards/splitography/keymaps/dvorak/keymap.c ****     {STN_N1,  STN_N2,  STN_N3,  STN_N4,  STN_N5,  STN_N6,  STN_N7,  STN_N8,  STN_N9,  STN_NA,  STN_
+ 233:keyboards/splitography/keymaps/dvorak/keymap.c ****     {DVORAK1, STN_S1,  STN_TL,  STN_PL,  STN_HL,  STN_ST1, STN_ST3, STN_FR,  STN_PR,  STN_LR,  STN_
+ 234:keyboards/splitography/keymaps/dvorak/keymap.c ****     {DVORAK2, STN_S2,  STN_KL,  STN_WL,  STN_RL,  STN_ST2, STN_ST4, STN_RR,  STN_BR,  STN_GR,  STN_
+ 235:keyboards/splitography/keymaps/dvorak/keymap.c ****     {_______, _______, _______, _______, STN_A,   STN_O,   STN_E,   STN_U,   _______, _______, ____
+ 236:keyboards/splitography/keymaps/dvorak/keymap.c ****   },
+ 237:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 238:keyboards/splitography/keymaps/dvorak/keymap.c **** };
+ 239:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 240:keyboards/splitography/keymaps/dvorak/keymap.c **** // ..................................................................... Keymaps
+ 241:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 242:keyboards/splitography/keymaps/dvorak/keymap.c **** void clear_layers(void)
+ 243:keyboards/splitography/keymaps/dvorak/keymap.c **** {
+  16               		.loc 1 243 0
+  17               		.cfi_startproc
+  18 0000 CF93      		push r28
+  19               	.LCFI0:
+  20               		.cfi_def_cfa_offset 3
+  21               		.cfi_offset 28, -2
+  22               	/* prologue: function */
+  23               	/* frame size = 0 */
+  24               	/* stack size = 1 */
+  25               	.L__stack_usage = 1
+  26               	.LVL0:
+ 244:keyboards/splitography/keymaps/dvorak/keymap.c ****   uint8_t layer;
+ 245:keyboards/splitography/keymaps/dvorak/keymap.c ****   for (layer = 0; layer < _END_LAYERS; layer++) {
+  27               		.loc 1 245 0
+  28 0002 C0E0      		ldi r28,0
+  29               	.LVL1:
+  30               	.L2:
+ 246:keyboards/splitography/keymaps/dvorak/keymap.c ****     layer_off(layer);
+  31               		.loc 1 246 0 discriminator 3
+  32 0004 8C2F      		mov r24,r28
+  33 0006 0E94 0000 		call layer_off
+  34               	.LVL2:
+ 245:keyboards/splitography/keymaps/dvorak/keymap.c ****     layer_off(layer);
+  35               		.loc 1 245 0 discriminator 3
+  36 000a CF5F      		subi r28,lo8(-(1))
+  37               	.LVL3:
+  38 000c C730      		cpi r28,lo8(7)
+  39 000e 01F4      		brne .L2
+  40               	/* epilogue start */
+ 247:keyboards/splitography/keymaps/dvorak/keymap.c ****   }
+ 248:keyboards/splitography/keymaps/dvorak/keymap.c **** }
+  41               		.loc 1 248 0
+  42 0010 CF91      		pop r28
+  43               	.LVL4:
+  44 0012 0895      		ret
+  45               		.cfi_endproc
+  46               	.LFE110:
+  48               		.section	.text.dvorak,"ax",@progbits
+  49               	.global	dvorak
+  51               	dvorak:
+  52               	.LFB111:
+ 249:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 250:keyboards/splitography/keymaps/dvorak/keymap.c **** #define DVORAK_1  1
+ 251:keyboards/splitography/keymaps/dvorak/keymap.c **** #define DVORAK_2  2
+ 252:keyboards/splitography/keymaps/dvorak/keymap.c **** #define DVORAK_12 3
+ 253:keyboards/splitography/keymaps/dvorak/keymap.c **** static uint8_t dvorak_n = 0;
+ 254:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 255:keyboards/splitography/keymaps/dvorak/keymap.c **** void dvorak(void)
+ 256:keyboards/splitography/keymaps/dvorak/keymap.c **** {
+  53               		.loc 1 256 0
+  54               		.cfi_startproc
+  55               	/* prologue: function */
+  56               	/* frame size = 0 */
+  57               	/* stack size = 0 */
+  58               	.L__stack_usage = 0
+ 257:keyboards/splitography/keymaps/dvorak/keymap.c ****   dvorak_n = 0;
+  59               		.loc 1 257 0
+  60 0000 1092 0000 		sts dvorak_n,__zero_reg__
+ 258:keyboards/splitography/keymaps/dvorak/keymap.c ****   clear_layers();
+  61               		.loc 1 258 0
+  62 0004 0E94 0000 		call clear_layers
+  63               	.LVL5:
+ 259:keyboards/splitography/keymaps/dvorak/keymap.c ****   set_single_persistent_default_layer(_DVORAK);
+  64               		.loc 1 259 0
+  65 0008 80E0      		ldi r24,0
+  66 000a 0C94 0000 		jmp set_single_persistent_default_layer
+  67               	.LVL6:
+  68               		.cfi_endproc
+  69               	.LFE111:
+  71               		.section	.text.plover,"ax",@progbits
+  72               	.global	plover
+  74               	plover:
+  75               	.LFB112:
+ 260:keyboards/splitography/keymaps/dvorak/keymap.c **** }
+ 261:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 262:keyboards/splitography/keymaps/dvorak/keymap.c **** void plover(keyrecord_t *record)
+ 263:keyboards/splitography/keymaps/dvorak/keymap.c **** {
+  76               		.loc 1 263 0
+  77               		.cfi_startproc
+  78               	.LVL7:
+  79               	/* prologue: function */
+  80               	/* frame size = 0 */
+  81               	/* stack size = 0 */
+  82               	.L__stack_usage = 0
+ 264:keyboards/splitography/keymaps/dvorak/keymap.c ****   if (record->event.pressed) {
+  83               		.loc 1 264 0
+  84 0000 FC01      		movw r30,r24
+  85 0002 8281      		ldd r24,Z+2
+  86               	.LVL8:
+  87 0004 8823      		tst r24
+  88 0006 01F0      		breq .L5
+ 265:keyboards/splitography/keymaps/dvorak/keymap.c ****     clear_layers();
+  89               		.loc 1 265 0
+  90 0008 0E94 0000 		call clear_layers
+  91               	.LVL9:
+ 266:keyboards/splitography/keymaps/dvorak/keymap.c ****     layer_on(_PLOVER);
+  92               		.loc 1 266 0
+  93 000c 82E0      		ldi r24,lo8(2)
+  94 000e 0E94 0000 		call layer_on
+  95               	.LVL10:
+ 267:keyboards/splitography/keymaps/dvorak/keymap.c ****     if (!eeconfig_is_enabled()) {
+  96               		.loc 1 267 0
+  97 0012 0E94 0000 		call eeconfig_is_enabled
+  98               	.LVL11:
+  99 0016 8111      		cpse r24,__zero_reg__
+ 100 0018 00C0      		rjmp .L7
+ 268:keyboards/splitography/keymaps/dvorak/keymap.c ****       eeconfig_init();
+ 101               		.loc 1 268 0
+ 102 001a 0E94 0000 		call eeconfig_init
+ 103               	.LVL12:
+ 104               	.L7:
+ 269:keyboards/splitography/keymaps/dvorak/keymap.c ****     }
+ 270:keyboards/splitography/keymaps/dvorak/keymap.c ****     keymap_config.raw  = eeconfig_read_keymap();
+ 105               		.loc 1 270 0
+ 106 001e 0E94 0000 		call eeconfig_read_keymap
+ 107               	.LVL13:
+ 108 0022 90E0      		ldi r25,0
+ 109 0024 9093 0000 		sts keymap_config+1,r25
+ 110 0028 8093 0000 		sts keymap_config,r24
+ 271:keyboards/splitography/keymaps/dvorak/keymap.c ****     keymap_config.nkro = 1;
+ 111               		.loc 1 271 0
+ 112 002c 8068      		ori r24,lo8(1<<7)
+ 113 002e 8093 0000 		sts keymap_config,r24
+ 272:keyboards/splitography/keymaps/dvorak/keymap.c ****     eeconfig_update_keymap(keymap_config.raw);
+ 114               		.loc 1 272 0
+ 115 0032 0C94 0000 		jmp eeconfig_update_keymap
+ 116               	.LVL14:
+ 117               	.L5:
+ 118               	/* epilogue start */
+ 273:keyboards/splitography/keymaps/dvorak/keymap.c ****   }
+ 274:keyboards/splitography/keymaps/dvorak/keymap.c **** }
+ 119               		.loc 1 274 0
+ 120 0036 0895      		ret
+ 121               		.cfi_endproc
+ 122               	.LFE112:
+ 124               		.section	.text.txbolt,"ax",@progbits
+ 125               	.global	txbolt
+ 127               	txbolt:
+ 128               	.LFB113:
+ 275:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 276:keyboards/splitography/keymaps/dvorak/keymap.c **** void txbolt(void)
+ 277:keyboards/splitography/keymaps/dvorak/keymap.c **** {
+ 129               		.loc 1 277 0
+ 130               		.cfi_startproc
+ 131               	/* prologue: function */
+ 132               	/* frame size = 0 */
+ 133               	/* stack size = 0 */
+ 134               	.L__stack_usage = 0
+ 278:keyboards/splitography/keymaps/dvorak/keymap.c ****   clear_layers();
+ 135               		.loc 1 278 0
+ 136 0000 0E94 0000 		call clear_layers
+ 137               	.LVL15:
+ 279:keyboards/splitography/keymaps/dvorak/keymap.c ****   layer_on(_TXBOLT);
+ 138               		.loc 1 279 0
+ 139 0004 81E0      		ldi r24,lo8(1)
+ 140 0006 0C94 0000 		jmp layer_on
+ 141               	.LVL16:
+ 142               		.cfi_endproc
+ 143               	.LFE113:
+ 145               		.section	.text.process_record_user,"ax",@progbits
+ 146               	.global	process_record_user
+ 148               	process_record_user:
+ 149               	.LFB114:
+ 280:keyboards/splitography/keymaps/dvorak/keymap.c **** }
+ 281:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 282:keyboards/splitography/keymaps/dvorak/keymap.c **** // ........................................................... User Keycode Trap
+ 283:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 284:keyboards/splitography/keymaps/dvorak/keymap.c **** bool process_record_user(uint16_t keycode, keyrecord_t *record)
+ 285:keyboards/splitography/keymaps/dvorak/keymap.c **** {
+ 150               		.loc 1 285 0
+ 151               		.cfi_startproc
+ 152               	.LVL17:
+ 153 0000 CF93      		push r28
+ 154               	.LCFI1:
+ 155               		.cfi_def_cfa_offset 3
+ 156               		.cfi_offset 28, -2
+ 157               	/* prologue: function */
+ 158               	/* frame size = 0 */
+ 159               	/* stack size = 1 */
+ 160               	.L__stack_usage = 1
+ 161 0002 DB01      		movw r26,r22
+ 286:keyboards/splitography/keymaps/dvorak/keymap.c ****   switch (keycode) {
+ 162               		.loc 1 286 0
+ 163 0004 8A5D      		subi r24,-38
+ 164 0006 9C45      		sbci r25,92
+ 165               	.LVL18:
+ 287:keyboards/splitography/keymaps/dvorak/keymap.c ****     case DVORAK:
+ 288:keyboards/splitography/keymaps/dvorak/keymap.c ****       if (record->event.pressed) {
+ 289:keyboards/splitography/keymaps/dvorak/keymap.c ****         dvorak();
+ 290:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 291:keyboards/splitography/keymaps/dvorak/keymap.c ****       return false;
+ 292:keyboards/splitography/keymaps/dvorak/keymap.c ****     case DVORAK1:
+ 293:keyboards/splitography/keymaps/dvorak/keymap.c ****       if (record->event.pressed) {
+ 294:keyboards/splitography/keymaps/dvorak/keymap.c ****         dvorak_n = dvorak_n | DVORAK_1;
+ 295:keyboards/splitography/keymaps/dvorak/keymap.c ****         if (dvorak_n == DVORAK_12) {
+ 296:keyboards/splitography/keymaps/dvorak/keymap.c ****           dvorak();
+ 297:keyboards/splitography/keymaps/dvorak/keymap.c ****         }
+ 298:keyboards/splitography/keymaps/dvorak/keymap.c ****       } else {
+ 299:keyboards/splitography/keymaps/dvorak/keymap.c ****         dvorak_n = dvorak_n & ~DVORAK_1;
+ 300:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 301:keyboards/splitography/keymaps/dvorak/keymap.c ****       return false;
+ 302:keyboards/splitography/keymaps/dvorak/keymap.c ****     case DVORAK2:
+ 303:keyboards/splitography/keymaps/dvorak/keymap.c ****       if (record->event.pressed) {
+ 304:keyboards/splitography/keymaps/dvorak/keymap.c ****         dvorak_n = dvorak_n | DVORAK_2;
+ 305:keyboards/splitography/keymaps/dvorak/keymap.c ****         if (dvorak_n == DVORAK_12) {
+ 306:keyboards/splitography/keymaps/dvorak/keymap.c ****           dvorak();
+ 307:keyboards/splitography/keymaps/dvorak/keymap.c ****         }
+ 308:keyboards/splitography/keymaps/dvorak/keymap.c ****       } else {
+ 309:keyboards/splitography/keymaps/dvorak/keymap.c ****         dvorak_n = dvorak_n & ~DVORAK_2;
+ 310:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 311:keyboards/splitography/keymaps/dvorak/keymap.c ****       return false;
+ 312:keyboards/splitography/keymaps/dvorak/keymap.c ****     case BLUE:
+ 313:keyboards/splitography/keymaps/dvorak/keymap.c ****       if (record->event.pressed) {
+ 314:keyboards/splitography/keymaps/dvorak/keymap.c ****         layer_on        (_BLUE);
+ 315:keyboards/splitography/keymaps/dvorak/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 316:keyboards/splitography/keymaps/dvorak/keymap.c ****       } else {
+ 317:keyboards/splitography/keymaps/dvorak/keymap.c ****         layer_off       (_BLUE);
+ 318:keyboards/splitography/keymaps/dvorak/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 319:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 320:keyboards/splitography/keymaps/dvorak/keymap.c ****       return false;
+ 321:keyboards/splitography/keymaps/dvorak/keymap.c ****     case ORANGE:
+ 322:keyboards/splitography/keymaps/dvorak/keymap.c ****       if (record->event.pressed) {
+ 323:keyboards/splitography/keymaps/dvorak/keymap.c ****         layer_on        (_ORANGE);
+ 324:keyboards/splitography/keymaps/dvorak/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 325:keyboards/splitography/keymaps/dvorak/keymap.c ****       } else {
+ 326:keyboards/splitography/keymaps/dvorak/keymap.c ****         layer_off       (_ORANGE);
+ 327:keyboards/splitography/keymaps/dvorak/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 328:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 329:keyboards/splitography/keymaps/dvorak/keymap.c ****       return false;
+ 330:keyboards/splitography/keymaps/dvorak/keymap.c ****     case PLOVER:
+ 331:keyboards/splitography/keymaps/dvorak/keymap.c ****       plover(record);
+ 332:keyboards/splitography/keymaps/dvorak/keymap.c ****       return false;
+ 333:keyboards/splitography/keymaps/dvorak/keymap.c ****     case TXBOLT:
+ 334:keyboards/splitography/keymaps/dvorak/keymap.c ****       if (record->event.pressed) {
+ 335:keyboards/splitography/keymaps/dvorak/keymap.c ****         txbolt();
+ 336:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 337:keyboards/splitography/keymaps/dvorak/keymap.c ****       return false;
+ 338:keyboards/splitography/keymaps/dvorak/keymap.c ****   }
+ 339:keyboards/splitography/keymaps/dvorak/keymap.c ****   return true;
+ 166               		.loc 1 339 0
+ 167 0008 C1E0      		ldi r28,lo8(1)
+ 286:keyboards/splitography/keymaps/dvorak/keymap.c ****   switch (keycode) {
+ 168               		.loc 1 286 0
+ 169 000a 8730      		cpi r24,7
+ 170 000c 9105      		cpc r25,__zero_reg__
+ 171 000e 00F4      		brsh .L9
+ 172 0010 FC01      		movw r30,r24
+ 173 0012 E050      		subi r30,lo8(-(gs(.L12)))
+ 174 0014 F040      		sbci r31,hi8(-(gs(.L12)))
+ 175 0016 0C94 0000 		jmp __tablejump2__
+ 176               		.p2align	1
+ 177               	.L12:
+ 178 001a 0000      		.word gs(.L11)
+ 179 001c 0000      		.word gs(.L13)
+ 180 001e 0000      		.word gs(.L14)
+ 181 0020 0000      		.word gs(.L15)
+ 182 0022 0000      		.word gs(.L16)
+ 183 0024 0000      		.word gs(.L17)
+ 184 0026 0000      		.word gs(.L18)
+ 185               	.L11:
+ 288:keyboards/splitography/keymaps/dvorak/keymap.c ****         dvorak();
+ 186               		.loc 1 288 0
+ 187 0028 1296      		adiw r26,2
+ 188 002a 8C91      		ld r24,X
+ 189               	.LVL19:
+ 190 002c 8111      		cpse r24,__zero_reg__
+ 191 002e 00C0      		rjmp .L19
+ 192               	.LVL20:
+ 193               	.L37:
+ 337:keyboards/splitography/keymaps/dvorak/keymap.c ****   }
+ 194               		.loc 1 337 0
+ 195 0030 C0E0      		ldi r28,0
+ 196 0032 00C0      		rjmp .L9
+ 197               	.LVL21:
+ 198               	.L13:
+ 293:keyboards/splitography/keymaps/dvorak/keymap.c ****         dvorak_n = dvorak_n | DVORAK_1;
+ 199               		.loc 1 293 0
+ 200 0034 1296      		adiw r26,2
+ 201 0036 CC91      		ld r28,X
+ 202 0038 8091 0000 		lds r24,dvorak_n
+ 203 003c CC23      		tst r28
+ 204 003e 01F0      		breq .L20
+ 294:keyboards/splitography/keymaps/dvorak/keymap.c ****         if (dvorak_n == DVORAK_12) {
+ 205               		.loc 1 294 0
+ 206 0040 8160      		ori r24,lo8(1)
+ 207               	.L36:
+ 304:keyboards/splitography/keymaps/dvorak/keymap.c ****         if (dvorak_n == DVORAK_12) {
+ 208               		.loc 1 304 0
+ 209 0042 8093 0000 		sts dvorak_n,r24
+ 305:keyboards/splitography/keymaps/dvorak/keymap.c ****           dvorak();
+ 210               		.loc 1 305 0
+ 211 0046 8330      		cpi r24,lo8(3)
+ 212 0048 01F4      		brne .L37
+ 213               	.L19:
+ 289:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 214               		.loc 1 289 0
+ 215 004a 0E94 0000 		call dvorak
+ 216               	.LVL22:
+ 217 004e 00C0      		rjmp .L37
+ 218               	.LVL23:
+ 219               	.L20:
+ 299:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 220               		.loc 1 299 0
+ 221 0050 8E7F      		andi r24,lo8(-2)
+ 222               	.L38:
+ 309:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 223               		.loc 1 309 0
+ 224 0052 8093 0000 		sts dvorak_n,r24
+ 225               	.LVL24:
+ 226               	.L9:
+ 340:keyboards/splitography/keymaps/dvorak/keymap.c **** }
+ 227               		.loc 1 340 0
+ 228 0056 8C2F      		mov r24,r28
+ 229               	/* epilogue start */
+ 230 0058 CF91      		pop r28
+ 231 005a 0895      		ret
+ 232               	.LVL25:
+ 233               	.L14:
+ 303:keyboards/splitography/keymaps/dvorak/keymap.c ****         dvorak_n = dvorak_n | DVORAK_2;
+ 234               		.loc 1 303 0
+ 235 005c 1296      		adiw r26,2
+ 236 005e CC91      		ld r28,X
+ 237 0060 8091 0000 		lds r24,dvorak_n
+ 238 0064 CC23      		tst r28
+ 239 0066 01F0      		breq .L22
+ 304:keyboards/splitography/keymaps/dvorak/keymap.c ****         if (dvorak_n == DVORAK_12) {
+ 240               		.loc 1 304 0
+ 241 0068 8260      		ori r24,lo8(2)
+ 242 006a 00C0      		rjmp .L36
+ 243               	.L22:
+ 309:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 244               		.loc 1 309 0
+ 245 006c 8D7F      		andi r24,lo8(-3)
+ 246 006e 00C0      		rjmp .L38
+ 247               	.L17:
+ 313:keyboards/splitography/keymaps/dvorak/keymap.c ****         layer_on        (_BLUE);
+ 248               		.loc 1 313 0
+ 249 0070 1296      		adiw r26,2
+ 250 0072 CC91      		ld r28,X
+ 314:keyboards/splitography/keymaps/dvorak/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 251               		.loc 1 314 0
+ 252 0074 83E0      		ldi r24,lo8(3)
+ 253               	.L41:
+ 322:keyboards/splitography/keymaps/dvorak/keymap.c ****         layer_on        (_ORANGE);
+ 254               		.loc 1 322 0
+ 255 0076 CC23      		tst r28
+ 256 0078 01F0      		breq .L24
+ 323:keyboards/splitography/keymaps/dvorak/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 257               		.loc 1 323 0
+ 258 007a 0E94 0000 		call layer_on
+ 259               	.LVL26:
+ 324:keyboards/splitography/keymaps/dvorak/keymap.c ****       } else {
+ 260               		.loc 1 324 0
+ 261 007e 45E0      		ldi r20,lo8(5)
+ 262 0080 64E0      		ldi r22,lo8(4)
+ 263 0082 83E0      		ldi r24,lo8(3)
+ 264 0084 0E94 0000 		call update_tri_layer
+ 265               	.LVL27:
+ 266 0088 00C0      		rjmp .L37
+ 267               	.LVL28:
+ 268               	.L18:
+ 322:keyboards/splitography/keymaps/dvorak/keymap.c ****         layer_on        (_ORANGE);
+ 269               		.loc 1 322 0
+ 270 008a 1296      		adiw r26,2
+ 271 008c CC91      		ld r28,X
+ 323:keyboards/splitography/keymaps/dvorak/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 272               		.loc 1 323 0
+ 273 008e 84E0      		ldi r24,lo8(4)
+ 274 0090 00C0      		rjmp .L41
+ 275               	.L24:
+ 326:keyboards/splitography/keymaps/dvorak/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 276               		.loc 1 326 0
+ 277 0092 0E94 0000 		call layer_off
+ 278               	.LVL29:
+ 327:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 279               		.loc 1 327 0
+ 280 0096 45E0      		ldi r20,lo8(5)
+ 281 0098 64E0      		ldi r22,lo8(4)
+ 282 009a 83E0      		ldi r24,lo8(3)
+ 283 009c 0E94 0000 		call update_tri_layer
+ 284               	.LVL30:
+ 285 00a0 00C0      		rjmp .L9
+ 286               	.LVL31:
+ 287               	.L16:
+ 331:keyboards/splitography/keymaps/dvorak/keymap.c ****       return false;
+ 288               		.loc 1 331 0
+ 289 00a2 CB01      		movw r24,r22
+ 290 00a4 0E94 0000 		call plover
+ 291               	.LVL32:
+ 292 00a8 00C0      		rjmp .L37
+ 293               	.LVL33:
+ 294               	.L15:
+ 334:keyboards/splitography/keymaps/dvorak/keymap.c ****         txbolt();
+ 295               		.loc 1 334 0
+ 296 00aa 1296      		adiw r26,2
+ 297 00ac 8C91      		ld r24,X
+ 298 00ae 8823      		tst r24
+ 299 00b0 01F4      		brne .+2
+ 300 00b2 00C0      		rjmp .L37
+ 335:keyboards/splitography/keymaps/dvorak/keymap.c ****       }
+ 301               		.loc 1 335 0
+ 302 00b4 0E94 0000 		call txbolt
+ 303               	.LVL34:
+ 304 00b8 00C0      		rjmp .L37
+ 305               		.cfi_endproc
+ 306               	.LFE114:
+ 308               		.section	.text.matrix_init_user,"ax",@progbits
+ 309               	.global	matrix_init_user
+ 311               	matrix_init_user:
+ 312               	.LFB115:
+ 341:keyboards/splitography/keymaps/dvorak/keymap.c **** 
+ 342:keyboards/splitography/keymaps/dvorak/keymap.c **** // initialize steno protocol
+ 343:keyboards/splitography/keymaps/dvorak/keymap.c **** void matrix_init_user(void)
+ 344:keyboards/splitography/keymaps/dvorak/keymap.c **** {
+ 313               		.loc 1 344 0
+ 314               		.cfi_startproc
+ 315               	/* prologue: function */
+ 316               	/* frame size = 0 */
+ 317               	/* stack size = 0 */
+ 318               	.L__stack_usage = 0
+ 345:keyboards/splitography/keymaps/dvorak/keymap.c ****   steno_set_mode(STENO_MODE_BOLT);
+ 319               		.loc 1 345 0
+ 320 0000 80E0      		ldi r24,0
+ 321 0002 0C94 0000 		jmp steno_set_mode
+ 322               	.LVL35:
+ 323               		.cfi_endproc
+ 324               	.LFE115:
+ 326               		.section	.bss.dvorak_n,"aw",@nobits
+ 329               	dvorak_n:
+ 330 0000 00        		.zero	1
+ 331               	.global	keymaps
+ 332               		.section	.progmem.data.keymaps,"a",@progbits
+ 335               	keymaps:
+ 336 0000 2900      		.word	41
+ 337 0002 3400      		.word	52
+ 338 0004 3600      		.word	54
+ 339 0006 3700      		.word	55
+ 340 0008 1300      		.word	19
+ 341 000a 1C00      		.word	28
+ 342 000c 0900      		.word	9
+ 343 000e 0A00      		.word	10
+ 344 0010 0600      		.word	6
+ 345 0012 1500      		.word	21
+ 346 0014 0F00      		.word	15
+ 347 0016 2A00      		.word	42
+ 348 0018 E200      		.word	226
+ 349 001a 0400      		.word	4
+ 350 001c 1200      		.word	18
+ 351 001e 0800      		.word	8
+ 352 0020 1800      		.word	24
+ 353 0022 0C00      		.word	12
+ 354 0024 0700      		.word	7
+ 355 0026 0B00      		.word	11
+ 356 0028 1700      		.word	23
+ 357 002a 1100      		.word	17
+ 358 002c 1600      		.word	22
+ 359 002e 2800      		.word	40
+ 360 0030 E100      		.word	225
+ 361 0032 3300      		.word	51
+ 362 0034 1400      		.word	20
+ 363 0036 0D00      		.word	13
+ 364 0038 0E00      		.word	14
+ 365 003a 1B00      		.word	27
+ 366 003c 0500      		.word	5
+ 367 003e 1000      		.word	16
+ 368 0040 1A00      		.word	26
+ 369 0042 1900      		.word	25
+ 370 0044 1D00      		.word	29
+ 371 0046 E300      		.word	227
+ 372 0048 0000      		.word	0
+ 373 004a 0000      		.word	0
+ 374 004c 0000      		.word	0
+ 375 004e 0000      		.word	0
+ 376 0050 E05C      		.word	23776
+ 377 0052 DF5C      		.word	23775
+ 378 0054 2C00      		.word	44
+ 379 0056 E000      		.word	224
+ 380 0058 0000      		.word	0
+ 381 005a 0000      		.word	0
+ 382 005c 0000      		.word	0
+ 383 005e 0000      		.word	0
+ 384 0060 015A      		.word	23041
+ 385 0062 025A      		.word	23042
+ 386 0064 035A      		.word	23043
+ 387 0066 045A      		.word	23044
+ 388 0068 055A      		.word	23045
+ 389 006a 065A      		.word	23046
+ 390 006c 235A      		.word	23075
+ 391 006e 245A      		.word	23076
+ 392 0070 255A      		.word	23077
+ 393 0072 265A      		.word	23078
+ 394 0074 275A      		.word	23079
+ 395 0076 285A      		.word	23080
+ 396 0078 DB5C      		.word	23771
+ 397 007a 075A      		.word	23047
+ 398 007c 095A      		.word	23049
+ 399 007e 0B5A      		.word	23051
+ 400 0080 0D5A      		.word	23053
+ 401 0082 115A      		.word	23057
+ 402 0084 165A      		.word	23062
+ 403 0086 1A5A      		.word	23066
+ 404 0088 1C5A      		.word	23068
+ 405 008a 1E5A      		.word	23070
+ 406 008c 205A      		.word	23072
+ 407 008e 225A      		.word	23074
+ 408 0090 DC5C      		.word	23772
+ 409 0092 085A      		.word	23048
+ 410 0094 0A5A      		.word	23050
+ 411 0096 0C5A      		.word	23052
+ 412 0098 0E5A      		.word	23054
+ 413 009a 125A      		.word	23058
+ 414 009c 175A      		.word	23063
+ 415 009e 1B5A      		.word	23067
+ 416 00a0 1D5A      		.word	23069
+ 417 00a2 1F5A      		.word	23071
+ 418 00a4 215A      		.word	23073
+ 419 00a6 295A      		.word	23081
+ 420 00a8 0000      		.word	0
+ 421 00aa 0000      		.word	0
+ 422 00ac 0000      		.word	0
+ 423 00ae 0000      		.word	0
+ 424 00b0 0F5A      		.word	23055
+ 425 00b2 105A      		.word	23056
+ 426 00b4 185A      		.word	23064
+ 427 00b6 195A      		.word	23065
+ 428 00b8 0000      		.word	0
+ 429 00ba 0000      		.word	0
+ 430 00bc 0000      		.word	0
+ 431 00be 0000      		.word	0
+ 432 00c0 1E00      		.word	30
+ 433 00c2 1E00      		.word	30
+ 434 00c4 1E00      		.word	30
+ 435 00c6 1E00      		.word	30
+ 436 00c8 1E00      		.word	30
+ 437 00ca 1E00      		.word	30
+ 438 00cc 1E00      		.word	30
+ 439 00ce 1E00      		.word	30
+ 440 00d0 1E00      		.word	30
+ 441 00d2 1E00      		.word	30
+ 442 00d4 1E00      		.word	30
+ 443 00d6 1E00      		.word	30
+ 444 00d8 DB5C      		.word	23771
+ 445 00da 1400      		.word	20
+ 446 00dc 1A00      		.word	26
+ 447 00de 0800      		.word	8
+ 448 00e0 1500      		.word	21
+ 449 00e2 1700      		.word	23
+ 450 00e4 1C00      		.word	28
+ 451 00e6 1800      		.word	24
+ 452 00e8 0C00      		.word	12
+ 453 00ea 1200      		.word	18
+ 454 00ec 1300      		.word	19
+ 455 00ee 2F00      		.word	47
+ 456 00f0 DC5C      		.word	23772
+ 457 00f2 0400      		.word	4
+ 458 00f4 1600      		.word	22
+ 459 00f6 0700      		.word	7
+ 460 00f8 0900      		.word	9
+ 461 00fa 0A00      		.word	10
+ 462 00fc 0B00      		.word	11
+ 463 00fe 0D00      		.word	13
+ 464 0100 0E00      		.word	14
+ 465 0102 0F00      		.word	15
+ 466 0104 3300      		.word	51
+ 467 0106 3400      		.word	52
+ 468 0108 0000      		.word	0
+ 469 010a 0000      		.word	0
+ 470 010c 0000      		.word	0
+ 471 010e 0000      		.word	0
+ 472 0110 0600      		.word	6
+ 473 0112 1900      		.word	25
+ 474 0114 1100      		.word	17
+ 475 0116 1000      		.word	16
+ 476 0118 0000      		.word	0
+ 477 011a 0000      		.word	0
+ 478 011c 0000      		.word	0
+ 479 011e 0000      		.word	0
+ 480 0120 3500      		.word	53
+ 481 0122 1E00      		.word	30
+ 482 0124 1F00      		.word	31
+ 483 0126 2000      		.word	32
+ 484 0128 2100      		.word	33
+ 485 012a 2200      		.word	34
+ 486 012c 2300      		.word	35
+ 487 012e 2400      		.word	36
+ 488 0130 2500      		.word	37
+ 489 0132 2600      		.word	38
+ 490 0134 2700      		.word	39
+ 491 0136 0000      		.word	0
+ 492 0138 E200      		.word	226
+ 493 013a AD00      		.word	173
+ 494 013c AC00      		.word	172
+ 495 013e AE00      		.word	174
+ 496 0140 AB00      		.word	171
+ 497 0142 A900      		.word	169
+ 498 0144 0000      		.word	0
+ 499 0146 0000      		.word	0
+ 500 0148 0000      		.word	0
+ 501 014a 2F00      		.word	47
+ 502 014c 3000      		.word	48
+ 503 014e 3800      		.word	56
+ 504 0150 E100      		.word	225
+ 505 0152 1D01      		.word	285
+ 506 0154 1B01      		.word	283
+ 507 0156 0601      		.word	262
+ 508 0158 1901      		.word	281
+ 509 015a AA00      		.word	170
+ 510 015c A800      		.word	168
+ 511 015e 0000      		.word	0
+ 512 0160 0000      		.word	0
+ 513 0162 2D00      		.word	45
+ 514 0164 2E00      		.word	46
+ 515 0166 E300      		.word	227
+ 516 0168 0000      		.word	0
+ 517 016a 0000      		.word	0
+ 518 016c 0000      		.word	0
+ 519 016e 0000      		.word	0
+ 520 0170 E05C      		.word	23776
+ 521 0172 0100      		.word	1
+ 522 0174 4C00      		.word	76
+ 523 0176 E000      		.word	224
+ 524 0178 0000      		.word	0
+ 525 017a 0000      		.word	0
+ 526 017c 0000      		.word	0
+ 527 017e 0000      		.word	0
+ 528 0180 DE5C      		.word	23774
+ 529 0182 3A00      		.word	58
+ 530 0184 3B00      		.word	59
+ 531 0186 3C00      		.word	60
+ 532 0188 3D00      		.word	61
+ 533 018a 0000      		.word	0
+ 534 018c 6500      		.word	101
+ 535 018e 4600      		.word	70
+ 536 0190 4700      		.word	71
+ 537 0192 4800      		.word	72
+ 538 0194 0000      		.word	0
+ 539 0196 0000      		.word	0
+ 540 0198 E200      		.word	226
+ 541 019a 3E00      		.word	62
+ 542 019c 3F00      		.word	63
+ 543 019e 4000      		.word	64
+ 544 01a0 4100      		.word	65
+ 545 01a2 0000      		.word	0
+ 546 01a4 0000      		.word	0
+ 547 01a6 4900      		.word	73
+ 548 01a8 4A00      		.word	74
+ 549 01aa 4B00      		.word	75
+ 550 01ac 0000      		.word	0
+ 551 01ae 0000      		.word	0
+ 552 01b0 E100      		.word	225
+ 553 01b2 4200      		.word	66
+ 554 01b4 4300      		.word	67
+ 555 01b6 4400      		.word	68
+ 556 01b8 4500      		.word	69
+ 557 01ba 0000      		.word	0
+ 558 01bc 0000      		.word	0
+ 559 01be 4C00      		.word	76
+ 560 01c0 4D00      		.word	77
+ 561 01c2 4E00      		.word	78
+ 562 01c4 3100      		.word	49
+ 563 01c6 E300      		.word	227
+ 564 01c8 0000      		.word	0
+ 565 01ca 0000      		.word	0
+ 566 01cc 0000      		.word	0
+ 567 01ce 0000      		.word	0
+ 568 01d0 0100      		.word	1
+ 569 01d2 DF5C      		.word	23775
+ 570 01d4 2B00      		.word	43
+ 571 01d6 E000      		.word	224
+ 572 01d8 0000      		.word	0
+ 573 01da 0000      		.word	0
+ 574 01dc 0000      		.word	0
+ 575 01de 0000      		.word	0
+ 576 01e0 DD5C      		.word	23773
+ 577 01e2 0000      		.word	0
+ 578 01e4 0000      		.word	0
+ 579 01e6 0000      		.word	0
+ 580 01e8 0000      		.word	0
+ 581 01ea 4700      		.word	71
+ 582 01ec 5400      		.word	84
+ 583 01ee 5F00      		.word	95
+ 584 01f0 6000      		.word	96
+ 585 01f2 6100      		.word	97
+ 586 01f4 2D00      		.word	45
+ 587 01f6 0000      		.word	0
+ 588 01f8 E200      		.word	226
+ 589 01fa 4A00      		.word	74
+ 590 01fc 5200      		.word	82
+ 591 01fe 4D00      		.word	77
+ 592 0200 4B00      		.word	75
+ 593 0202 3900      		.word	57
+ 594 0204 5500      		.word	85
+ 595 0206 5C00      		.word	92
+ 596 0208 5D00      		.word	93
+ 597 020a 5E00      		.word	94
+ 598 020c 5700      		.word	87
+ 599 020e 2800      		.word	40
+ 600 0210 E100      		.word	225
+ 601 0212 5000      		.word	80
+ 602 0214 5100      		.word	81
+ 603 0216 4F00      		.word	79
+ 604 0218 4E00      		.word	78
+ 605 021a 0653      		.word	21254
+ 606 021c 6200      		.word	98
+ 607 021e 5900      		.word	89
+ 608 0220 5A00      		.word	90
+ 609 0222 5B00      		.word	91
+ 610 0224 0000      		.word	0
+ 611 0226 E300      		.word	227
+ 612 0228 0000      		.word	0
+ 613 022a 0000      		.word	0
+ 614 022c 0000      		.word	0
+ 615 022e 0000      		.word	0
+ 616 0230 0100      		.word	1
+ 617 0232 0100      		.word	1
+ 618 0234 0000      		.word	0
+ 619 0236 E000      		.word	224
+ 620 0238 0000      		.word	0
+ 621 023a 0000      		.word	0
+ 622 023c 0000      		.word	0
+ 623 023e 0000      		.word	0
+ 624 0240 0000      		.word	0
+ 625 0242 0000      		.word	0
+ 626 0244 0000      		.word	0
+ 627 0246 0000      		.word	0
+ 628 0248 0000      		.word	0
+ 629 024a 0000      		.word	0
+ 630 024c 5400      		.word	84
+ 631 024e 5F00      		.word	95
+ 632 0250 6000      		.word	96
+ 633 0252 6100      		.word	97
+ 634 0254 5600      		.word	86
+ 635 0256 0000      		.word	0
+ 636 0258 E200      		.word	226
+ 637 025a 4A00      		.word	74
+ 638 025c 5200      		.word	82
+ 639 025e 4D00      		.word	77
+ 640 0260 4B00      		.word	75
+ 641 0262 0000      		.word	0
+ 642 0264 5500      		.word	85
+ 643 0266 5C00      		.word	92
+ 644 0268 5D00      		.word	93
+ 645 026a 5E00      		.word	94
+ 646 026c 5700      		.word	87
+ 647 026e 2800      		.word	40
+ 648 0270 E100      		.word	225
+ 649 0272 5000      		.word	80
+ 650 0274 5100      		.word	81
+ 651 0276 4F00      		.word	79
+ 652 0278 4E00      		.word	78
+ 653 027a DA5C      		.word	23770
+ 654 027c 6200      		.word	98
+ 655 027e 5900      		.word	89
+ 656 0280 5A00      		.word	90
+ 657 0282 5B00      		.word	91
+ 658 0284 0000      		.word	0
+ 659 0286 E300      		.word	227
+ 660 0288 0000      		.word	0
+ 661 028a 0000      		.word	0
+ 662 028c 0000      		.word	0
+ 663 028e 0000      		.word	0
+ 664 0290 0000      		.word	0
+ 665 0292 0000      		.word	0
+ 666 0294 0000      		.word	0
+ 667 0296 E000      		.word	224
+ 668 0298 0000      		.word	0
+ 669 029a 0000      		.word	0
+ 670 029c 0000      		.word	0
+ 671 029e 0000      		.word	0
+ 672               		.text
+ 673               	.Letext0:
+ 674               		.file 2 "/usr/avr/include/stdint.h"
+ 675               		.file 3 "/usr/lib/gcc/avr/7.3.0/include/stddef.h"
+ 676               		.file 4 "./tmk_core/common/keyboard.h"
+ 677               		.file 5 "./tmk_core/common/keycode.h"
+ 678               		.file 6 "./tmk_core/common/action.h"
+ 679               		.file 7 "./lib/lufa/LUFA/Drivers/USB/Core/AVR8/../StdRequestType.h"
+ 680               		.file 8 "./lib/lufa/LUFA/Drivers/USB/Core/AVR8/../DeviceStandardReq.h"
+ 681               		.file 9 "./lib/lufa/LUFA/Drivers/USB/Core/USBTask.h"
+ 682               		.file 10 "./lib/lufa/LUFA/Drivers/USB/Core/HostStandardReq.h"
+ 683               		.file 11 "/usr/avr/include/stdio.h"
+ 684               		.file 12 "./tmk_core/common/report.h"
+ 685               		.file 13 "./tmk_core/common/host.h"
+ 686               		.file 14 "./tmk_core/common/debug.h"
+ 687               		.file 15 "./quantum/keycode_config.h"
+ 688               		.file 16 "./quantum/quantum_keycodes.h"
+ 689               		.file 17 "./quantum/keymap.h"
+ 690               		.file 18 "./tmk_core/common/action_layer.h"
+ 691               		.file 19 "./tmk_core/common/timer.h"
+ 692               		.file 20 "./tmk_core/common/action_util.h"
+ 693               		.file 21 "/usr/avr/include/stdlib.h"
+ 694               		.file 22 "./quantum/quantum.h"
+ 695               		.file 23 "./quantum/keymap_extras/keymap_steno.h"
+ 696               		.file 24 "./quantum/process_keycode/process_steno.h"
+ 697               		.file 25 "./tmk_core/common/eeconfig.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 keymap.c
+     /tmp/cc3KrbKu.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/cc3KrbKu.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/cc3KrbKu.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/cc3KrbKu.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/cc3KrbKu.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/cc3KrbKu.s:13     .text.clear_layers:0000000000000000 clear_layers
+     /tmp/cc3KrbKu.s:51     .text.dvorak:0000000000000000 dvorak
+     /tmp/cc3KrbKu.s:329    .bss.dvorak_n:0000000000000000 dvorak_n
+     /tmp/cc3KrbKu.s:74     .text.plover:0000000000000000 plover
+     /tmp/cc3KrbKu.s:127    .text.txbolt:0000000000000000 txbolt
+     /tmp/cc3KrbKu.s:148    .text.process_record_user:0000000000000000 process_record_user
+     /tmp/cc3KrbKu.s:311    .text.matrix_init_user:0000000000000000 matrix_init_user
+     /tmp/cc3KrbKu.s:335    .progmem.data.keymaps:0000000000000000 keymaps
+
+UNDEFINED SYMBOLS
+layer_off
+set_single_persistent_default_layer
+layer_on
+eeconfig_is_enabled
+eeconfig_init
+eeconfig_read_keymap
+keymap_config
+eeconfig_update_keymap
+__tablejump2__
+update_tri_layer
+steno_set_mode
+__do_clear_bss

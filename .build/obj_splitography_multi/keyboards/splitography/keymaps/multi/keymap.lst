@@ -1,0 +1,1559 @@
+   1               		.file	"keymap.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text.clear_layers,"ax",@progbits
+  11               	.global	clear_layers
+  13               	clear_layers:
+  14               	.LFB110:
+  15               		.file 1 "keyboards/splitography/keymaps/multi/keymap.c"
+   1:keyboards/splitography/keymaps/multi/keymap.c **** /* Copyright 2017 REPLACE_WITH_YOUR_NAME
+   2:keyboards/splitography/keymaps/multi/keymap.c ****  *
+   3:keyboards/splitography/keymaps/multi/keymap.c ****  * This program is free software: you can redistribute it and/or modify
+   4:keyboards/splitography/keymaps/multi/keymap.c ****  * it under the terms of the GNU General Public License as published by
+   5:keyboards/splitography/keymaps/multi/keymap.c ****  * the Free Software Foundation, either version 2 of the License, or
+   6:keyboards/splitography/keymaps/multi/keymap.c ****  * (at your option) any later version.
+   7:keyboards/splitography/keymaps/multi/keymap.c ****  *
+   8:keyboards/splitography/keymaps/multi/keymap.c ****  * This program is distributed in the hope that it will be useful,
+   9:keyboards/splitography/keymaps/multi/keymap.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  10:keyboards/splitography/keymaps/multi/keymap.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  11:keyboards/splitography/keymaps/multi/keymap.c ****  * GNU General Public License for more details.
+  12:keyboards/splitography/keymaps/multi/keymap.c ****  *
+  13:keyboards/splitography/keymaps/multi/keymap.c ****  * You should have received a copy of the GNU General Public License
+  14:keyboards/splitography/keymaps/multi/keymap.c ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  15:keyboards/splitography/keymaps/multi/keymap.c ****  */
+  16:keyboards/splitography/keymaps/multi/keymap.c **** 
+  17:keyboards/splitography/keymaps/multi/keymap.c **** // This is the canonical layout file for the Quantum project. If you want to add another keyboard,
+  18:keyboards/splitography/keymaps/multi/keymap.c **** // this is the style you want to emulate.
+  19:keyboards/splitography/keymaps/multi/keymap.c **** //
+  20:keyboards/splitography/keymaps/multi/keymap.c **** // To flash steno firmware
+  21:keyboards/splitography/keymaps/multi/keymap.c **** // ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+  22:keyboards/splitography/keymaps/multi/keymap.c **** //   Reset keyboard or press hw reset button on base (hole)
+  23:keyboards/splitography/keymaps/multi/keymap.c **** //
+  24:keyboards/splitography/keymaps/multi/keymap.c **** //   cd qmk_firmware/keyboards/steno
+  25:keyboards/splitography/keymaps/multi/keymap.c **** //   sudo make KEYMAP=sdothum dfu
+  26:keyboards/splitography/keymaps/multi/keymap.c **** //
+  27:keyboards/splitography/keymaps/multi/keymap.c **** //   sudo make clean          (good practice before flashing)
+  28:keyboards/splitography/keymaps/multi/keymap.c **** //   sudo make KEYMAP=<...>   (to compile check)
+  29:keyboards/splitography/keymaps/multi/keymap.c **** //
+  30:keyboards/splitography/keymaps/multi/keymap.c **** // Package requirements (for arch linux)
+  31:keyboards/splitography/keymaps/multi/keymap.c **** // ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+  32:keyboards/splitography/keymaps/multi/keymap.c **** //   avr-gcc-atmel
+  33:keyboards/splitography/keymaps/multi/keymap.c **** //   avr-libc-atmel
+  34:keyboards/splitography/keymaps/multi/keymap.c **** //   dfu-programmer
+  35:keyboards/splitography/keymaps/multi/keymap.c **** //
+  36:keyboards/splitography/keymaps/multi/keymap.c **** // Code
+  37:keyboards/splitography/keymaps/multi/keymap.c **** // ▔▔▔▔
+  38:keyboards/splitography/keymaps/multi/keymap.c **** //   This source is shamelessly based on the "default" steno layout
+  39:keyboards/splitography/keymaps/multi/keymap.c **** //
+  40:keyboards/splitography/keymaps/multi/keymap.c **** //   #ifdef/#endif block structures are not indented, as syntax highlighting
+  41:keyboards/splitography/keymaps/multi/keymap.c **** //   in vim is sufficient for identification
+  42:keyboards/splitography/keymaps/multi/keymap.c **** //
+  43:keyboards/splitography/keymaps/multi/keymap.c **** //   c++ commenting style is used throughout
+  44:keyboards/splitography/keymaps/multi/keymap.c **** 
+  45:keyboards/splitography/keymaps/multi/keymap.c **** #include "config.h"
+  46:keyboards/splitography/keymaps/multi/keymap.c **** #include "splitography.h"
+  47:keyboards/splitography/keymaps/multi/keymap.c **** #include "action_layer.h"
+  48:keyboards/splitography/keymaps/multi/keymap.c **** #include "keymap_steno.h"
+  49:keyboards/splitography/keymaps/multi/keymap.c **** #include "eeconfig.h"
+  50:keyboards/splitography/keymaps/multi/keymap.c **** 
+  51:keyboards/splitography/keymaps/multi/keymap.c **** extern keymap_config_t keymap_config;
+  52:keyboards/splitography/keymaps/multi/keymap.c **** 
+  53:keyboards/splitography/keymaps/multi/keymap.c **** enum splitography_layers {
+  54:keyboards/splitography/keymaps/multi/keymap.c ****   _QWERTY = 0
+  55:keyboards/splitography/keymaps/multi/keymap.c ****  ,_DVORAK
+  56:keyboards/splitography/keymaps/multi/keymap.c ****  ,_COLEMAK
+  57:keyboards/splitography/keymaps/multi/keymap.c ****  ,_WORKMAN
+  58:keyboards/splitography/keymaps/multi/keymap.c ****  ,_TXBOLT
+  59:keyboards/splitography/keymaps/multi/keymap.c ****  ,_PLOVER
+  60:keyboards/splitography/keymaps/multi/keymap.c ****  ,_BLUE
+  61:keyboards/splitography/keymaps/multi/keymap.c ****  ,_ORANGE
+  62:keyboards/splitography/keymaps/multi/keymap.c ****  ,_GREEN
+  63:keyboards/splitography/keymaps/multi/keymap.c ****  ,_NUM
+  64:keyboards/splitography/keymaps/multi/keymap.c ****  ,_END_LAYERS
+  65:keyboards/splitography/keymaps/multi/keymap.c **** };
+  66:keyboards/splitography/keymaps/multi/keymap.c **** 
+  67:keyboards/splitography/keymaps/multi/keymap.c **** enum splitography_keycodes {
+  68:keyboards/splitography/keymaps/multi/keymap.c ****   QWERTY = SAFE_RANGE
+  69:keyboards/splitography/keymaps/multi/keymap.c ****  ,DVORAK
+  70:keyboards/splitography/keymaps/multi/keymap.c ****  ,COLEMAK
+  71:keyboards/splitography/keymaps/multi/keymap.c ****  ,WORKMAN
+  72:keyboards/splitography/keymaps/multi/keymap.c ****  ,BASE
+  73:keyboards/splitography/keymaps/multi/keymap.c ****  ,BASE1
+  74:keyboards/splitography/keymaps/multi/keymap.c ****  ,BASE2
+  75:keyboards/splitography/keymaps/multi/keymap.c ****  ,TXBOLT
+  76:keyboards/splitography/keymaps/multi/keymap.c ****  ,PLOVER
+  77:keyboards/splitography/keymaps/multi/keymap.c ****  ,BLUE
+  78:keyboards/splitography/keymaps/multi/keymap.c ****  ,ORANGE
+  79:keyboards/splitography/keymaps/multi/keymap.c **** };
+  80:keyboards/splitography/keymaps/multi/keymap.c **** 
+  81:keyboards/splitography/keymaps/multi/keymap.c **** // keycodes
+  82:keyboards/splitography/keymaps/multi/keymap.c **** #define ___x___ KC_TRNS
+  83:keyboards/splitography/keymaps/multi/keymap.c **** #ifdef _______
+  84:keyboards/splitography/keymaps/multi/keymap.c **** #undef _______
+  85:keyboards/splitography/keymaps/multi/keymap.c **** #endif
+  86:keyboards/splitography/keymaps/multi/keymap.c **** #define _______ KC_NO
+  87:keyboards/splitography/keymaps/multi/keymap.c **** 
+  88:keyboards/splitography/keymaps/multi/keymap.c **** #define ST_BOLT QK_STENO_BOLT
+  89:keyboards/splitography/keymaps/multi/keymap.c **** 
+  90:keyboards/splitography/keymaps/multi/keymap.c **** #define COPY    LCTL(KC_C)
+  91:keyboards/splitography/keymaps/multi/keymap.c **** #define CUT     LCTL(KC_X)
+  92:keyboards/splitography/keymaps/multi/keymap.c **** #define PASTE   LCTL(KC_V)
+  93:keyboards/splitography/keymaps/multi/keymap.c **** #define UNDO    LCTL(KC_Z)
+  94:keyboards/splitography/keymaps/multi/keymap.c **** #define TG_NUM  TG(_NUM)
+  95:keyboards/splitography/keymaps/multi/keymap.c **** 
+  96:keyboards/splitography/keymaps/multi/keymap.c **** const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+  97:keyboards/splitography/keymaps/multi/keymap.c **** 
+  98:keyboards/splitography/keymaps/multi/keymap.c **** // ...................................................................... Qwerty
+  99:keyboards/splitography/keymaps/multi/keymap.c **** //
+ 100:keyboards/splitography/keymaps/multi/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/1b04ce6be0cee6e5d2998b2a8efb8b09
+ 101:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 102:keyboards/splitography/keymaps/multi/keymap.c ****   // ,-----------------------------------------------------------------------------------.
+ 103:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Esc |   Q  |   W  |   E  |   R  |   T  |   Y  |   U  |   I  |   O  |   P  | Bksp |
+ 104:keyboards/splitography/keymaps/multi/keymap.c ****   // -------|------+------+------+------+------+------+------+------+------+-------------|
+ 105:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Alt |   A  |   S  |   D  |   F  |   G  |   H  |   J  |   K  |   L  |   ;  | Enter|
+ 106:keyboards/splitography/keymaps/multi/keymap.c ****   // -------|------+------+------+------+------+------+------+------+------+-------------|
+ 107:keyboards/splitography/keymaps/multi/keymap.c ****   // | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |  GUI |
+ 108:keyboards/splitography/keymaps/multi/keymap.c ****   // |------+------+------+------+------+------+------+------+------+------+------+------|
+ 109:keyboards/splitography/keymaps/multi/keymap.c ****   // |                           |Orange| Blue | Space| Ctrl |                           |
+ 110:keyboards/splitography/keymaps/multi/keymap.c ****   // `-----------------------------------------------------------------------------------'
+ 111:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 112:keyboards/splitography/keymaps/multi/keymap.c ****   [_QWERTY] = {
+ 113:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_ESC,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P
+ 114:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LALT, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_S
+ 115:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_S
+ 116:keyboards/splitography/keymaps/multi/keymap.c ****     {_______, _______, _______, _______, ORANGE,  BLUE,    KC_SPC,  KC_LCTL, _______, _______, ____
+ 117:keyboards/splitography/keymaps/multi/keymap.c ****   },
+ 118:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 119:keyboards/splitography/keymaps/multi/keymap.c **** // ...................................................................... Dvorak
+ 120:keyboards/splitography/keymaps/multi/keymap.c **** //
+ 121:keyboards/splitography/keymaps/multi/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/1b04ce6be0cee6e5d2998b2a8efb8b09
+ 122:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 123:keyboards/splitography/keymaps/multi/keymap.c ****   // ,-----------------------------------------------------------------------------------.
+ 124:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Esc |   "  |   ,  |   .  |   P  |   Y  |   F  |   G  |   C  |   R  |   L  | Bksp |
+ 125:keyboards/splitography/keymaps/multi/keymap.c ****   // -------|------+------+------+------+------+------+------+------+------+-------------|
+ 126:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Alt |   A  |   O  |   E  |   U  |   I  |   D  |   H  |   T  |   N  |   S  | Enter|
+ 127:keyboards/splitography/keymaps/multi/keymap.c ****   // -------|------+------+------+------+------+------+------+------+------+-------------|
+ 128:keyboards/splitography/keymaps/multi/keymap.c ****   // | Shift|   ;  |   Q  |   J  |   K  |   X  |   B  |   M  |   W  |   V  |   Z  |  GUI |
+ 129:keyboards/splitography/keymaps/multi/keymap.c ****   // |------+------+------+------+------+------+------+------+------+------+------+------|
+ 130:keyboards/splitography/keymaps/multi/keymap.c ****   // |                           |Orange| Blue | Space| Ctrl |                           |
+ 131:keyboards/splitography/keymaps/multi/keymap.c ****   // `-----------------------------------------------------------------------------------'
+ 132:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 133:keyboards/splitography/keymaps/multi/keymap.c ****   [_DVORAK] = {
+ 134:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_ESC,  KC_QUOT, KC_COMM, KC_DOT,  KC_P,    KC_Y,    KC_F,    KC_G,    KC_C,    KC_R,    KC_L
+ 135:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LALT, KC_A,    KC_O,    KC_E,    KC_U,    KC_I,    KC_D,    KC_H,    KC_T,    KC_N,    KC_S
+ 136:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LSFT, KC_SCLN, KC_Q,    KC_J,    KC_K,    KC_X,    KC_B,    KC_M,    KC_W,    KC_V,    KC_Z
+ 137:keyboards/splitography/keymaps/multi/keymap.c ****     {_______, _______, _______, _______, ORANGE,  BLUE,    KC_SPC,  KC_LCTL, _______, _______, ____
+ 138:keyboards/splitography/keymaps/multi/keymap.c ****   },
+ 139:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 140:keyboards/splitography/keymaps/multi/keymap.c **** // ..................................................................... Colemak
+ 141:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 142:keyboards/splitography/keymaps/multi/keymap.c ****   // ,-----------------------------------------------------------------------------------.
+ 143:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Esc |   Q  |   W  |   F  |   P  |   G  |   J  |   L  |   U  |   Y  |   ;  | Bksp |
+ 144:keyboards/splitography/keymaps/multi/keymap.c ****   // -------|------+------+------+------+-------------+------+------+------+-------------|
+ 145:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Alt |   A  |   R  |   S  |   T  |   D  |   H  |   N  |   E  |   I  |   O  | Enter|
+ 146:keyboards/splitography/keymaps/multi/keymap.c ****   // -------|------+------+------+------+------|------+------+------+------+-------------|
+ 147:keyboards/splitography/keymaps/multi/keymap.c ****   // | Shift|   Z  |   X  |   C  |   V  |   B  |   K  |   M  |   ,  |   .  |   /  |  GUI |
+ 148:keyboards/splitography/keymaps/multi/keymap.c ****   // |------+------+------+------+------+------+------+------+------+------+------+------|
+ 149:keyboards/splitography/keymaps/multi/keymap.c ****   // |                           |Orange| Blue | Space| Ctrl |                           |
+ 150:keyboards/splitography/keymaps/multi/keymap.c ****   // `-----------------------------------------------------------------------------------'
+ 151:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 152:keyboards/splitography/keymaps/multi/keymap.c ****   [_COLEMAK] = {
+ 153:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_ESC,  KC_Q,    KC_W,    KC_F,    KC_P,    KC_G,    KC_J,    KC_L,    KC_U,    KC_Y,    KC_S
+ 154:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LALT, KC_A,    KC_R,    KC_S,    KC_T,    KC_D,    KC_H,    KC_N,    KC_E,    KC_I,    KC_O
+ 155:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_K,    KC_M,    KC_COMM, KC_DOT,  KC_S
+ 156:keyboards/splitography/keymaps/multi/keymap.c ****     {_______, _______, _______, _______, ORANGE,  BLUE,    KC_SPC,  KC_LCTL, _______, _______, ____
+ 157:keyboards/splitography/keymaps/multi/keymap.c ****   },
+ 158:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 159:keyboards/splitography/keymaps/multi/keymap.c **** // ..................................................................... Workman
+ 160:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 161:keyboards/splitography/keymaps/multi/keymap.c ****   // ,-----------------------------------------------------------------------------------.
+ 162:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Esc |   Q  |   D  |   R  |   W  |   B  |   J  |   F  |   U  |   P  |   ;  | Bksp |
+ 163:keyboards/splitography/keymaps/multi/keymap.c ****   // -------|------+------+------+------+-------------+------+------+------+-------------|
+ 164:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Alt |   A  |   S  |   H  |   T  |   G  |   Y  |   N  |   E  |   O  |   I  | Enter|
+ 165:keyboards/splitography/keymaps/multi/keymap.c ****   // -------|------+------+------+------+------|------+------+------+------+-------------|
+ 166:keyboards/splitography/keymaps/multi/keymap.c ****   // | Shift|   Z  |   X  |   M  |   C  |   V  |   K  |   L  |   ,  |   .  |   /  |  GUI |
+ 167:keyboards/splitography/keymaps/multi/keymap.c ****   // |------+------+------+------+------+------+------+------+------+------+------+------|
+ 168:keyboards/splitography/keymaps/multi/keymap.c ****   // |                           |Orange| Blue | Space| Ctrl |                           |
+ 169:keyboards/splitography/keymaps/multi/keymap.c ****   // `-----------------------------------------------------------------------------------'
+ 170:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 171:keyboards/splitography/keymaps/multi/keymap.c ****   [_WORKMAN] = {
+ 172:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_ESC,  KC_Q,    KC_D,    KC_R,    KC_W,    KC_B,    KC_J,    KC_F,    KC_U,    KC_P,    KC_S
+ 173:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LALT, KC_A,    KC_S,    KC_H,    KC_T,    KC_G,    KC_Y,    KC_N,    KC_E,    KC_O,    KC_I
+ 174:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LSFT, KC_Z,    KC_X,    KC_M,    KC_C,    KC_V,    KC_K,    KC_L,    KC_COMM, KC_DOT,  KC_S
+ 175:keyboards/splitography/keymaps/multi/keymap.c ****     {_______, _______, _______, _______, ORANGE,  BLUE,    KC_SPC,  KC_LCTL, _______, _______, ____
+ 176:keyboards/splitography/keymaps/multi/keymap.c ****   },
+ 177:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 178:keyboards/splitography/keymaps/multi/keymap.c **** // .................................................................. Blue Layer
+ 179:keyboards/splitography/keymaps/multi/keymap.c **** //
+ 180:keyboards/splitography/keymaps/multi/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/054b8bc0e31971bb962ea1c781232e0b
+ 181:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 182:keyboards/splitography/keymaps/multi/keymap.c ****   // .-----------------------------------------------------------------------------------.
+ 183:keyboards/splitography/keymaps/multi/keymap.c ****   // |   `  |   1  |   2  |   3  |   4  |   5  |   6  |   7  |   8  |   9  |   0  |      |
+ 184:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 185:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Alt | Stop | Prev | Play | Next | +Vol |      |      |      |   [  |   ]  |   '  |
+ 186:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 187:keyboards/splitography/keymaps/multi/keymap.c ****   // | Shift| Undo |  Cut | Copy | Paste| -Vol | Mute |      |      |   -  |   =  |  GUI |
+ 188:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 189:keyboards/splitography/keymaps/multi/keymap.c ****   // |                           |Orange|  f() |  Del | Ctrl |                           |
+ 190:keyboards/splitography/keymaps/multi/keymap.c ****   // '-----------------------------------------------------------------------------------'
+ 191:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 192:keyboards/splitography/keymaps/multi/keymap.c ****   [_BLUE] = {
+ 193:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0
+ 194:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LALT, KC_MSTP, KC_MPRV, KC_MPLY, KC_MNXT, KC_VOLU, _______, _______, _______, KC_LBRC, KC_R
+ 195:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LSFT, UNDO,    CUT,     COPY,    PASTE,   KC_VOLD, KC_MUTE, _______, _______, KC_MINS, KC_E
+ 196:keyboards/splitography/keymaps/multi/keymap.c ****     {_______, _______, _______, _______, ORANGE,  ___x___, KC_DEL,  KC_LCTL, _______, _______, ____
+ 197:keyboards/splitography/keymaps/multi/keymap.c ****   },
+ 198:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 199:keyboards/splitography/keymaps/multi/keymap.c **** // ................................................................ Orange Layer
+ 200:keyboards/splitography/keymaps/multi/keymap.c **** //
+ 201:keyboards/splitography/keymaps/multi/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/83ccc7c3faa78b1f67f6fef65063a248
+ 202:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 203:keyboards/splitography/keymaps/multi/keymap.c ****   // .-----------------------------------------------------------------------------------.
+ 204:keyboards/splitography/keymaps/multi/keymap.c ****   // |Plover|  F1  |  F2  |  F3  |  F4  |      |  App | PrScr|ScrLck| Pause|      |      |
+ 205:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 206:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Alt |  F5  |  F6  |  F7  |  F8  |      |      |Insert| Home | PgUp |      |      |
+ 207:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 208:keyboards/splitography/keymaps/multi/keymap.c ****   // | Shift|  F9  |  F10 |  F11 |  F12 |      |      |  Del |  End | PgDn |   \  |  GUI |
+ 209:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 210:keyboards/splitography/keymaps/multi/keymap.c ****   // |                           |  f() | Blue |  Tab | Ctrl |                           |
+ 211:keyboards/splitography/keymaps/multi/keymap.c ****   // '-----------------------------------------------------------------------------------'
+ 212:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 213:keyboards/splitography/keymaps/multi/keymap.c ****   [_ORANGE] = {
+ 214:keyboards/splitography/keymaps/multi/keymap.c ****     {PLOVER,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   _______, KC_APP,  KC_PSCR, KC_SLCK, KC_PAUS, ____
+ 215:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LALT, KC_F5,   KC_F6,   KC_F7,   KC_F8,   _______, _______, KC_INS,  KC_HOME, KC_PGUP, ____
+ 216:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LSFT, KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______, _______, KC_DEL,  KC_END,  KC_PGDN, KC_B
+ 217:keyboards/splitography/keymaps/multi/keymap.c ****     {_______, _______, _______, _______, ___x___, BLUE,    KC_TAB,  KC_LCTL, _______, _______, ____
+ 218:keyboards/splitography/keymaps/multi/keymap.c ****   },
+ 219:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 220:keyboards/splitography/keymaps/multi/keymap.c **** // ................................................................. Green Layer
+ 221:keyboards/splitography/keymaps/multi/keymap.c **** //
+ 222:keyboards/splitography/keymaps/multi/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/bc7902f1eada4d7d34d3445aa1eccdab
+ 223:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 224:keyboards/splitography/keymaps/multi/keymap.c ****   // .-----------------------------------------------------------------------------------.
+ 225:keyboards/splitography/keymaps/multi/keymap.c ****   // |TxBolt|QWERTY|Dvorak|Colemk|Workmn|Scroll|   /  |   7  |   8  |   9  |   -  |      |
+ 226:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 227:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Alt | Home |  Up  |  End | PgUp | Caps |   *  |   4  |   5  |   6  |   +  | Enter|
+ 228:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 229:keyboards/splitography/keymaps/multi/keymap.c ****   // | Shift| Left | Down | Right| PgDn |  Num |   0  |   1  |   2  |   3  |      |  GUI |
+ 230:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 231:keyboards/splitography/keymaps/multi/keymap.c ****   // |                           |  f() |  f() |  --  | Ctrl |                           |
+ 232:keyboards/splitography/keymaps/multi/keymap.c ****   // '-----------------------------------------------------------------------------------'
+ 233:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 234:keyboards/splitography/keymaps/multi/keymap.c ****   [_GREEN] = {
+ 235:keyboards/splitography/keymaps/multi/keymap.c ****     {TXBOLT,  QWERTY,  DVORAK,  COLEMAK, WORKMAN, KC_SLCK, KC_PSLS, KC_P7,   KC_P8,   KC_P9,   KC_M
+ 236:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LALT, KC_HOME, KC_UP,   KC_END,  KC_PGUP, KC_CAPS, KC_PAST, KC_P4,   KC_P5,   KC_P6,   KC_P
+ 237:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LSFT, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, TG_NUM,  KC_P0,   KC_P1,   KC_P2,   KC_P3,   ____
+ 238:keyboards/splitography/keymaps/multi/keymap.c ****     {_______, _______, _______, _______, ___x___, ___x___, _______, KC_LCTL, _______, _______, ____
+ 239:keyboards/splitography/keymaps/multi/keymap.c ****   },
+ 240:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 241:keyboards/splitography/keymaps/multi/keymap.c **** // ................................................................... Num Layer
+ 242:keyboards/splitography/keymaps/multi/keymap.c **** //
+ 243:keyboards/splitography/keymaps/multi/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/bc7902f1eada4d7d34d3445aa1eccdab
+ 244:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 245:keyboards/splitography/keymaps/multi/keymap.c ****   // .-----------------------------------------------------------------------------------.
+ 246:keyboards/splitography/keymaps/multi/keymap.c ****   // |      |      |      |      |      |      |   /  |   7  |   8  |   9  |   -  |      |
+ 247:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 248:keyboards/splitography/keymaps/multi/keymap.c ****   // |  Alt | Home |  Up  |  End | PgUp |      |   *  |   4  |   5  |   6  |   +  | Enter|
+ 249:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 250:keyboards/splitography/keymaps/multi/keymap.c ****   // | Shift| Left | Down | Right| PgDn |  f() |   0  |   1  |   2  |   3  |      |  GUI |
+ 251:keyboards/splitography/keymaps/multi/keymap.c ****   // |-----------------------------------------------------------------------------------|
+ 252:keyboards/splitography/keymaps/multi/keymap.c ****   // |                           |  --  |  --  |  --  | Ctrl |                           |
+ 253:keyboards/splitography/keymaps/multi/keymap.c ****   // '-----------------------------------------------------------------------------------'
+ 254:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 255:keyboards/splitography/keymaps/multi/keymap.c ****   [_NUM] = {
+ 256:keyboards/splitography/keymaps/multi/keymap.c ****     {_______, _______, _______, _______, _______, _______, KC_PSLS, KC_P7,   KC_P8,   KC_P9,   KC_P
+ 257:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LALT, KC_HOME, KC_UP,   KC_END,  KC_PGUP, _______, KC_PAST, KC_P4,   KC_P5,   KC_P6,   KC_P
+ 258:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_LSFT, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN,  BASE,   KC_P0,   KC_P1,   KC_P2,   KC_P3,   ____
+ 259:keyboards/splitography/keymaps/multi/keymap.c ****     {_______, _______, _______, _______, _______, _______, _______, KC_LCTL, _______, _______, ____
+ 260:keyboards/splitography/keymaps/multi/keymap.c ****   },
+ 261:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 262:keyboards/splitography/keymaps/multi/keymap.c **** // ...................................................................... Plover
+ 263:keyboards/splitography/keymaps/multi/keymap.c **** //
+ 264:keyboards/splitography/keymaps/multi/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/27b8f8649393a8ba4071ba946a9306f4
+ 265:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 266:keyboards/splitography/keymaps/multi/keymap.c ****   // ,-----------------------------------------------------------------------------------.
+ 267:keyboards/splitography/keymaps/multi/keymap.c ****   // |   1  |   1  |   1  |   1  |   1  |   1  |   1  |   1  |   1  |   1  |   1  |   1  |
+ 268:keyboards/splitography/keymaps/multi/keymap.c ****   // +-------------+------+------+------+------+------+------+------+------+------+------|
+ 269:keyboards/splitography/keymaps/multi/keymap.c ****   // | Base |   S  |   T  |   P  |   H  |   *  |   *  |   F  |   P  |   L  |   T  |   D  |
+ 270:keyboards/splitography/keymaps/multi/keymap.c ****   // +------|------+------+------+------+------+------+------+------+------+------+------|
+ 271:keyboards/splitography/keymaps/multi/keymap.c ****   // | Base |   S  |   K  |   W  |   R  |   *  |   *  |   R  |   B  |   G  |   S  |   Z  |
+ 272:keyboards/splitography/keymaps/multi/keymap.c ****   // +------+------+------+------+------+------+------+------+------+------+------+------|
+ 273:keyboards/splitography/keymaps/multi/keymap.c ****   // |                           |   A  |   O  |   E  |   U  |                           |
+ 274:keyboards/splitography/keymaps/multi/keymap.c ****   // `-----------------------------------------------------------------------------------'
+ 275:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 276:keyboards/splitography/keymaps/multi/keymap.c ****   [_PLOVER] = {
+ 277:keyboards/splitography/keymaps/multi/keymap.c ****     {KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1
+ 278:keyboards/splitography/keymaps/multi/keymap.c ****     {BASE1, KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P, 
+ 279:keyboards/splitography/keymaps/multi/keymap.c ****     {BASE2, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCL
+ 280:keyboards/splitography/keymaps/multi/keymap.c ****     {_______, _______, _______, _______, KC_C,    KC_V,    KC_N,    KC_M,    _______, _______, ____
+ 281:keyboards/splitography/keymaps/multi/keymap.c ****   },
+ 282:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 283:keyboards/splitography/keymaps/multi/keymap.c **** // ...................................................................... TxBolt
+ 284:keyboards/splitography/keymaps/multi/keymap.c **** //
+ 285:keyboards/splitography/keymaps/multi/keymap.c **** // http://www.keyboard-layout-editor.com/#/gists/27b8f8649393a8ba4071ba946a9306f4
+ 286:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 287:keyboards/splitography/keymaps/multi/keymap.c ****   // ,-----------------------------------------------------------------------------------.
+ 288:keyboards/splitography/keymaps/multi/keymap.c ****   // |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |   #  |
+ 289:keyboards/splitography/keymaps/multi/keymap.c ****   // |------+------+------+------+------+-------------+------+------+------+------+------|
+ 290:keyboards/splitography/keymaps/multi/keymap.c ****   // | Base |   S  |   T  |   P  |   H  |   *  |   *  |   F  |   P  |   L  |   T  |   D  |
+ 291:keyboards/splitography/keymaps/multi/keymap.c ****   // |------+------+------+------+------+------|------+------+------+------+------+------|
+ 292:keyboards/splitography/keymaps/multi/keymap.c ****   // | Base |   S  |   K  |   W  |   R  |   *  |   *  |   R  |   B  |   G  |   S  |   Z  |
+ 293:keyboards/splitography/keymaps/multi/keymap.c ****   // |------+------+------+------+------+------+------+------+------+------+------+------|
+ 294:keyboards/splitography/keymaps/multi/keymap.c ****   // |                           |   A  |   O  |   E  |   U  |                           |
+ 295:keyboards/splitography/keymaps/multi/keymap.c ****   // `-----------------------------------------------------------------------------------'
+ 296:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 297:keyboards/splitography/keymaps/multi/keymap.c ****   [_TXBOLT] = {
+ 298:keyboards/splitography/keymaps/multi/keymap.c ****     {STN_N1,  STN_N2,  STN_N3,  STN_N4,  STN_N5,  STN_N6,  STN_N7,  STN_N8,  STN_N9,  STN_NA,  STN_
+ 299:keyboards/splitography/keymaps/multi/keymap.c ****     {BASE1, STN_S1,  STN_TL,  STN_PL,  STN_HL,  STN_ST1, STN_ST3, STN_FR,  STN_PR,  STN_LR,  STN_TR
+ 300:keyboards/splitography/keymaps/multi/keymap.c ****     {BASE2, STN_S2,  STN_KL,  STN_WL,  STN_RL,  STN_ST2, STN_ST4, STN_RR,  STN_BR,  STN_GR,  STN_SR
+ 301:keyboards/splitography/keymaps/multi/keymap.c ****     {_______, _______, _______, _______, STN_A,   STN_O,   STN_E,   STN_U,   _______, _______, ____
+ 302:keyboards/splitography/keymaps/multi/keymap.c ****   },
+ 303:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 304:keyboards/splitography/keymaps/multi/keymap.c **** };
+ 305:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 306:keyboards/splitography/keymaps/multi/keymap.c **** // ..................................................................... Keymaps
+ 307:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 308:keyboards/splitography/keymaps/multi/keymap.c **** void clear_layers(void)
+ 309:keyboards/splitography/keymaps/multi/keymap.c **** {
+  16               		.loc 1 309 0
+  17               		.cfi_startproc
+  18 0000 CF93      		push r28
+  19               	.LCFI0:
+  20               		.cfi_def_cfa_offset 3
+  21               		.cfi_offset 28, -2
+  22               	/* prologue: function */
+  23               	/* frame size = 0 */
+  24               	/* stack size = 1 */
+  25               	.L__stack_usage = 1
+  26               	.LVL0:
+ 310:keyboards/splitography/keymaps/multi/keymap.c ****   uint8_t layer;
+ 311:keyboards/splitography/keymaps/multi/keymap.c ****   for (layer = 0; layer < _END_LAYERS; layer++) { layer_off(layer); }
+  27               		.loc 1 311 0
+  28 0002 C0E0      		ldi r28,0
+  29               	.LVL1:
+  30               	.L2:
+  31               		.loc 1 311 0 is_stmt 0 discriminator 3
+  32 0004 8C2F      		mov r24,r28
+  33 0006 0E94 0000 		call layer_off
+  34               	.LVL2:
+  35 000a CF5F      		subi r28,lo8(-(1))
+  36               	.LVL3:
+  37 000c CA30      		cpi r28,lo8(10)
+  38 000e 01F4      		brne .L2
+  39               	/* epilogue start */
+ 312:keyboards/splitography/keymaps/multi/keymap.c **** }
+  40               		.loc 1 312 0 is_stmt 1
+  41 0010 CF91      		pop r28
+  42               	.LVL4:
+  43 0012 0895      		ret
+  44               		.cfi_endproc
+  45               	.LFE110:
+  47               		.section	.text.qwerty,"ax",@progbits
+  48               	.global	qwerty
+  50               	qwerty:
+  51               	.LFB111:
+ 313:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 314:keyboards/splitography/keymaps/multi/keymap.c **** #define BASE_1  1
+ 315:keyboards/splitography/keymaps/multi/keymap.c **** #define BASE_2  2
+ 316:keyboards/splitography/keymaps/multi/keymap.c **** #define BASE_12 3
+ 317:keyboards/splitography/keymaps/multi/keymap.c **** static uint8_t base_n = 0;
+ 318:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 319:keyboards/splitography/keymaps/multi/keymap.c **** void (*base_layer)(void) = NULL;
+ 320:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 321:keyboards/splitography/keymaps/multi/keymap.c **** void qwerty(void)
+ 322:keyboards/splitography/keymaps/multi/keymap.c **** {
+  52               		.loc 1 322 0
+  53               		.cfi_startproc
+  54               	/* prologue: function */
+  55               	/* frame size = 0 */
+  56               	/* stack size = 0 */
+  57               	.L__stack_usage = 0
+ 323:keyboards/splitography/keymaps/multi/keymap.c ****   base_layer = qwerty;
+  58               		.loc 1 323 0
+  59 0000 80E0      		ldi r24,lo8(gs(qwerty))
+  60 0002 90E0      		ldi r25,hi8(gs(qwerty))
+  61 0004 9093 0000 		sts base_layer+1,r25
+  62 0008 8093 0000 		sts base_layer,r24
+ 324:keyboards/splitography/keymaps/multi/keymap.c ****   base_n     = 0;
+  63               		.loc 1 324 0
+  64 000c 1092 0000 		sts base_n,__zero_reg__
+ 325:keyboards/splitography/keymaps/multi/keymap.c ****   clear_layers();
+  65               		.loc 1 325 0
+  66 0010 0E94 0000 		call clear_layers
+  67               	.LVL5:
+ 326:keyboards/splitography/keymaps/multi/keymap.c ****   set_single_persistent_default_layer(_QWERTY);
+  68               		.loc 1 326 0
+  69 0014 80E0      		ldi r24,0
+  70 0016 0C94 0000 		jmp set_single_persistent_default_layer
+  71               	.LVL6:
+  72               		.cfi_endproc
+  73               	.LFE111:
+  75               		.section	.text.dvorak,"ax",@progbits
+  76               	.global	dvorak
+  78               	dvorak:
+  79               	.LFB112:
+ 327:keyboards/splitography/keymaps/multi/keymap.c **** }
+ 328:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 329:keyboards/splitography/keymaps/multi/keymap.c **** void dvorak(void)
+ 330:keyboards/splitography/keymaps/multi/keymap.c **** {
+  80               		.loc 1 330 0
+  81               		.cfi_startproc
+  82               	/* prologue: function */
+  83               	/* frame size = 0 */
+  84               	/* stack size = 0 */
+  85               	.L__stack_usage = 0
+ 331:keyboards/splitography/keymaps/multi/keymap.c ****   base_layer = dvorak;
+  86               		.loc 1 331 0
+  87 0000 80E0      		ldi r24,lo8(gs(dvorak))
+  88 0002 90E0      		ldi r25,hi8(gs(dvorak))
+  89 0004 9093 0000 		sts base_layer+1,r25
+  90 0008 8093 0000 		sts base_layer,r24
+ 332:keyboards/splitography/keymaps/multi/keymap.c ****   base_n     = 0;
+  91               		.loc 1 332 0
+  92 000c 1092 0000 		sts base_n,__zero_reg__
+ 333:keyboards/splitography/keymaps/multi/keymap.c ****   clear_layers();
+  93               		.loc 1 333 0
+  94 0010 0E94 0000 		call clear_layers
+  95               	.LVL7:
+ 334:keyboards/splitography/keymaps/multi/keymap.c ****   set_single_persistent_default_layer(_DVORAK);
+  96               		.loc 1 334 0
+  97 0014 81E0      		ldi r24,lo8(1)
+  98 0016 0C94 0000 		jmp set_single_persistent_default_layer
+  99               	.LVL8:
+ 100               		.cfi_endproc
+ 101               	.LFE112:
+ 103               		.section	.text.colemak,"ax",@progbits
+ 104               	.global	colemak
+ 106               	colemak:
+ 107               	.LFB113:
+ 335:keyboards/splitography/keymaps/multi/keymap.c **** }
+ 336:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 337:keyboards/splitography/keymaps/multi/keymap.c **** void colemak(void)
+ 338:keyboards/splitography/keymaps/multi/keymap.c **** {
+ 108               		.loc 1 338 0
+ 109               		.cfi_startproc
+ 110               	/* prologue: function */
+ 111               	/* frame size = 0 */
+ 112               	/* stack size = 0 */
+ 113               	.L__stack_usage = 0
+ 339:keyboards/splitography/keymaps/multi/keymap.c ****   base_layer = colemak;
+ 114               		.loc 1 339 0
+ 115 0000 80E0      		ldi r24,lo8(gs(colemak))
+ 116 0002 90E0      		ldi r25,hi8(gs(colemak))
+ 117 0004 9093 0000 		sts base_layer+1,r25
+ 118 0008 8093 0000 		sts base_layer,r24
+ 340:keyboards/splitography/keymaps/multi/keymap.c ****   base_n     = 0;
+ 119               		.loc 1 340 0
+ 120 000c 1092 0000 		sts base_n,__zero_reg__
+ 341:keyboards/splitography/keymaps/multi/keymap.c ****   clear_layers();
+ 121               		.loc 1 341 0
+ 122 0010 0E94 0000 		call clear_layers
+ 123               	.LVL9:
+ 342:keyboards/splitography/keymaps/multi/keymap.c ****   set_single_persistent_default_layer(_COLEMAK);
+ 124               		.loc 1 342 0
+ 125 0014 82E0      		ldi r24,lo8(2)
+ 126 0016 0C94 0000 		jmp set_single_persistent_default_layer
+ 127               	.LVL10:
+ 128               		.cfi_endproc
+ 129               	.LFE113:
+ 131               		.section	.text.workman,"ax",@progbits
+ 132               	.global	workman
+ 134               	workman:
+ 135               	.LFB114:
+ 343:keyboards/splitography/keymaps/multi/keymap.c **** }
+ 344:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 345:keyboards/splitography/keymaps/multi/keymap.c **** void workman(void)
+ 346:keyboards/splitography/keymaps/multi/keymap.c **** {
+ 136               		.loc 1 346 0
+ 137               		.cfi_startproc
+ 138               	/* prologue: function */
+ 139               	/* frame size = 0 */
+ 140               	/* stack size = 0 */
+ 141               	.L__stack_usage = 0
+ 347:keyboards/splitography/keymaps/multi/keymap.c ****   base_layer = workman;
+ 142               		.loc 1 347 0
+ 143 0000 80E0      		ldi r24,lo8(gs(workman))
+ 144 0002 90E0      		ldi r25,hi8(gs(workman))
+ 145 0004 9093 0000 		sts base_layer+1,r25
+ 146 0008 8093 0000 		sts base_layer,r24
+ 348:keyboards/splitography/keymaps/multi/keymap.c ****   base_n     = 0;
+ 147               		.loc 1 348 0
+ 148 000c 1092 0000 		sts base_n,__zero_reg__
+ 349:keyboards/splitography/keymaps/multi/keymap.c ****   clear_layers();
+ 149               		.loc 1 349 0
+ 150 0010 0E94 0000 		call clear_layers
+ 151               	.LVL11:
+ 350:keyboards/splitography/keymaps/multi/keymap.c ****   set_single_persistent_default_layer(_WORKMAN);
+ 152               		.loc 1 350 0
+ 153 0014 83E0      		ldi r24,lo8(3)
+ 154 0016 0C94 0000 		jmp set_single_persistent_default_layer
+ 155               	.LVL12:
+ 156               		.cfi_endproc
+ 157               	.LFE114:
+ 159               		.section	.text.plover,"ax",@progbits
+ 160               	.global	plover
+ 162               	plover:
+ 163               	.LFB115:
+ 351:keyboards/splitography/keymaps/multi/keymap.c **** }
+ 352:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 353:keyboards/splitography/keymaps/multi/keymap.c **** void plover(keyrecord_t *record)
+ 354:keyboards/splitography/keymaps/multi/keymap.c **** {
+ 164               		.loc 1 354 0
+ 165               		.cfi_startproc
+ 166               	.LVL13:
+ 167               	/* prologue: function */
+ 168               	/* frame size = 0 */
+ 169               	/* stack size = 0 */
+ 170               	.L__stack_usage = 0
+ 355:keyboards/splitography/keymaps/multi/keymap.c ****   if (record->event.pressed) {
+ 171               		.loc 1 355 0
+ 172 0000 FC01      		movw r30,r24
+ 173 0002 8281      		ldd r24,Z+2
+ 174               	.LVL14:
+ 175 0004 8823      		tst r24
+ 176 0006 01F0      		breq .L8
+ 356:keyboards/splitography/keymaps/multi/keymap.c ****     clear_layers();
+ 177               		.loc 1 356 0
+ 178 0008 0E94 0000 		call clear_layers
+ 179               	.LVL15:
+ 357:keyboards/splitography/keymaps/multi/keymap.c ****     layer_on(_PLOVER);
+ 180               		.loc 1 357 0
+ 181 000c 85E0      		ldi r24,lo8(5)
+ 182 000e 0E94 0000 		call layer_on
+ 183               	.LVL16:
+ 358:keyboards/splitography/keymaps/multi/keymap.c ****     if (!eeconfig_is_enabled()) { eeconfig_init(); }
+ 184               		.loc 1 358 0
+ 185 0012 0E94 0000 		call eeconfig_is_enabled
+ 186               	.LVL17:
+ 187 0016 8111      		cpse r24,__zero_reg__
+ 188 0018 00C0      		rjmp .L10
+ 189               		.loc 1 358 0 is_stmt 0 discriminator 1
+ 190 001a 0E94 0000 		call eeconfig_init
+ 191               	.LVL18:
+ 192               	.L10:
+ 359:keyboards/splitography/keymaps/multi/keymap.c ****     keymap_config.raw  = eeconfig_read_keymap();
+ 193               		.loc 1 359 0 is_stmt 1
+ 194 001e 0E94 0000 		call eeconfig_read_keymap
+ 195               	.LVL19:
+ 196 0022 90E0      		ldi r25,0
+ 197 0024 9093 0000 		sts keymap_config+1,r25
+ 198 0028 8093 0000 		sts keymap_config,r24
+ 360:keyboards/splitography/keymaps/multi/keymap.c ****     keymap_config.nkro = 1;
+ 199               		.loc 1 360 0
+ 200 002c 8068      		ori r24,lo8(1<<7)
+ 201 002e 8093 0000 		sts keymap_config,r24
+ 361:keyboards/splitography/keymaps/multi/keymap.c ****     eeconfig_update_keymap(keymap_config.raw);
+ 202               		.loc 1 361 0
+ 203 0032 0C94 0000 		jmp eeconfig_update_keymap
+ 204               	.LVL20:
+ 205               	.L8:
+ 206               	/* epilogue start */
+ 362:keyboards/splitography/keymaps/multi/keymap.c ****   }
+ 363:keyboards/splitography/keymaps/multi/keymap.c **** }
+ 207               		.loc 1 363 0
+ 208 0036 0895      		ret
+ 209               		.cfi_endproc
+ 210               	.LFE115:
+ 212               		.section	.text.txbolt,"ax",@progbits
+ 213               	.global	txbolt
+ 215               	txbolt:
+ 216               	.LFB116:
+ 364:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 365:keyboards/splitography/keymaps/multi/keymap.c **** void txbolt(void)
+ 366:keyboards/splitography/keymaps/multi/keymap.c **** {
+ 217               		.loc 1 366 0
+ 218               		.cfi_startproc
+ 219               	/* prologue: function */
+ 220               	/* frame size = 0 */
+ 221               	/* stack size = 0 */
+ 222               	.L__stack_usage = 0
+ 367:keyboards/splitography/keymaps/multi/keymap.c ****   clear_layers();
+ 223               		.loc 1 367 0
+ 224 0000 0E94 0000 		call clear_layers
+ 225               	.LVL21:
+ 368:keyboards/splitography/keymaps/multi/keymap.c ****   layer_on(_TXBOLT);
+ 226               		.loc 1 368 0
+ 227 0004 84E0      		ldi r24,lo8(4)
+ 228 0006 0C94 0000 		jmp layer_on
+ 229               	.LVL22:
+ 230               		.cfi_endproc
+ 231               	.LFE116:
+ 233               		.section	.text.process_record_user,"ax",@progbits
+ 234               	.global	process_record_user
+ 236               	process_record_user:
+ 237               	.LFB117:
+ 369:keyboards/splitography/keymaps/multi/keymap.c **** }
+ 370:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 371:keyboards/splitography/keymaps/multi/keymap.c **** // ........................................................... User Keycode Trap
+ 372:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 373:keyboards/splitography/keymaps/multi/keymap.c **** bool process_record_user(uint16_t keycode, keyrecord_t *record)
+ 374:keyboards/splitography/keymaps/multi/keymap.c **** {
+ 238               		.loc 1 374 0
+ 239               		.cfi_startproc
+ 240               	.LVL23:
+ 241 0000 CF93      		push r28
+ 242               	.LCFI1:
+ 243               		.cfi_def_cfa_offset 3
+ 244               		.cfi_offset 28, -2
+ 245 0002 DF93      		push r29
+ 246               	.LCFI2:
+ 247               		.cfi_def_cfa_offset 4
+ 248               		.cfi_offset 29, -3
+ 249               	/* prologue: function */
+ 250               	/* frame size = 0 */
+ 251               	/* stack size = 2 */
+ 252               	.L__stack_usage = 2
+ 253 0004 EB01      		movw r28,r22
+ 375:keyboards/splitography/keymaps/multi/keymap.c ****   switch (keycode) {
+ 254               		.loc 1 375 0
+ 255 0006 8E3D      		cpi r24,-34
+ 256 0008 2CE5      		ldi r18,92
+ 257 000a 9207      		cpc r25,r18
+ 258 000c 01F4      		brne .+2
+ 259 000e 00C0      		rjmp .L14
+ 260 0010 00F4      		brsh .L15
+ 261 0012 8B3D      		cpi r24,-37
+ 262 0014 2CE5      		ldi r18,92
+ 263 0016 9207      		cpc r25,r18
+ 264 0018 01F4      		brne .+2
+ 265 001a 00C0      		rjmp .L16
+ 266 001c 00F4      		brsh .L17
+ 267 001e 8433      		cpi r24,52
+ 268 0020 9105      		cpc r25,__zero_reg__
+ 269 0022 01F4      		brne .+2
+ 270 0024 00C0      		rjmp .L18
+ 271 0026 8A3D      		cpi r24,-38
+ 272 0028 9C45      		sbci r25,92
+ 273 002a 01F0      		breq .L19
+ 274               	.LVL24:
+ 275               	.L38:
+ 376:keyboards/splitography/keymaps/multi/keymap.c ****     case QWERTY:
+ 377:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) { qwerty(); }
+ 378:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 379:keyboards/splitography/keymaps/multi/keymap.c ****     case DVORAK:
+ 380:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) { dvorak(); }
+ 381:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 382:keyboards/splitography/keymaps/multi/keymap.c ****     case KC_QUOT:
+ 383:keyboards/splitography/keymaps/multi/keymap.c ****       if ((base_layer != dvorak) || (biton32(layer_state) != _BLUE)) { break; }
+ 384:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) { register_code(KC_SLSH); }
+ 385:keyboards/splitography/keymaps/multi/keymap.c ****       else                       { unregister_code(KC_SLSH); }
+ 386:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 387:keyboards/splitography/keymaps/multi/keymap.c ****     case COLEMAK:
+ 388:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) { colemak(); }
+ 389:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 390:keyboards/splitography/keymaps/multi/keymap.c ****     case WORKMAN:
+ 391:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) { workman(); }
+ 392:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 393:keyboards/splitography/keymaps/multi/keymap.c ****     case BASE:
+ 394:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) { base_layer(); }
+ 395:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 396:keyboards/splitography/keymaps/multi/keymap.c ****     case BASE1:
+ 397:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) {
+ 398:keyboards/splitography/keymaps/multi/keymap.c ****         base_n = base_n | BASE_1;
+ 399:keyboards/splitography/keymaps/multi/keymap.c ****         if (base_n == BASE_12) { base_layer(); }
+ 400:keyboards/splitography/keymaps/multi/keymap.c ****       }
+ 401:keyboards/splitography/keymaps/multi/keymap.c ****       else { base_n = base_n & ~BASE_1; }
+ 402:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 403:keyboards/splitography/keymaps/multi/keymap.c ****     case BASE2:
+ 404:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) {
+ 405:keyboards/splitography/keymaps/multi/keymap.c ****         base_n = base_n | BASE_2;
+ 406:keyboards/splitography/keymaps/multi/keymap.c ****         if (base_n == BASE_12) { base_layer(); }
+ 407:keyboards/splitography/keymaps/multi/keymap.c ****       }
+ 408:keyboards/splitography/keymaps/multi/keymap.c ****       else { base_n = base_n & ~BASE_2; }
+ 409:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 410:keyboards/splitography/keymaps/multi/keymap.c ****     case BLUE:
+ 411:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) {
+ 412:keyboards/splitography/keymaps/multi/keymap.c ****         layer_on        (_BLUE);
+ 413:keyboards/splitography/keymaps/multi/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 414:keyboards/splitography/keymaps/multi/keymap.c ****       }
+ 415:keyboards/splitography/keymaps/multi/keymap.c ****       else {
+ 416:keyboards/splitography/keymaps/multi/keymap.c ****         layer_off       (_BLUE);
+ 417:keyboards/splitography/keymaps/multi/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 418:keyboards/splitography/keymaps/multi/keymap.c ****       }
+ 419:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 420:keyboards/splitography/keymaps/multi/keymap.c ****     case ORANGE:
+ 421:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) {
+ 422:keyboards/splitography/keymaps/multi/keymap.c ****         layer_on        (_ORANGE);
+ 423:keyboards/splitography/keymaps/multi/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 424:keyboards/splitography/keymaps/multi/keymap.c ****       }
+ 425:keyboards/splitography/keymaps/multi/keymap.c ****       else {
+ 426:keyboards/splitography/keymaps/multi/keymap.c ****         layer_off       (_ORANGE);
+ 427:keyboards/splitography/keymaps/multi/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 428:keyboards/splitography/keymaps/multi/keymap.c ****       }
+ 429:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 430:keyboards/splitography/keymaps/multi/keymap.c ****     case PLOVER:
+ 431:keyboards/splitography/keymaps/multi/keymap.c ****       plover(record);
+ 432:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 433:keyboards/splitography/keymaps/multi/keymap.c ****     case TXBOLT:
+ 434:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) { txbolt(); }
+ 435:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 436:keyboards/splitography/keymaps/multi/keymap.c ****   }
+ 437:keyboards/splitography/keymaps/multi/keymap.c ****   return true;
+ 276               		.loc 1 437 0
+ 277 002c C1E0      		ldi r28,lo8(1)
+ 278               	.LVL25:
+ 279 002e 00C0      		rjmp .L12
+ 280               	.LVL26:
+ 281               	.L17:
+ 375:keyboards/splitography/keymaps/multi/keymap.c ****   switch (keycode) {
+ 282               		.loc 1 375 0
+ 283 0030 8C3D      		cpi r24,-36
+ 284 0032 2CE5      		ldi r18,92
+ 285 0034 9207      		cpc r25,r18
+ 286 0036 01F4      		brne .+2
+ 287 0038 00C0      		rjmp .L20
+ 288 003a 8D3D      		cpi r24,-35
+ 289 003c 9C45      		sbci r25,92
+ 290 003e 01F4      		brne .L38
+ 391:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 291               		.loc 1 391 0
+ 292 0040 8A81      		ldd r24,Y+2
+ 293               	.LVL27:
+ 294 0042 8823      		tst r24
+ 295 0044 01F0      		breq .L54
+ 391:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 296               		.loc 1 391 0 is_stmt 0 discriminator 1
+ 297 0046 0E94 0000 		call workman
+ 298               	.LVL28:
+ 299 004a 00C0      		rjmp .L54
+ 300               	.LVL29:
+ 301               	.L15:
+ 375:keyboards/splitography/keymaps/multi/keymap.c ****   switch (keycode) {
+ 302               		.loc 1 375 0 is_stmt 1
+ 303 004c 813E      		cpi r24,-31
+ 304 004e 2CE5      		ldi r18,92
+ 305 0050 9207      		cpc r25,r18
+ 306 0052 01F4      		brne .+2
+ 307 0054 00C0      		rjmp .L22
+ 308 0056 00F4      		brsh .L23
+ 309 0058 8F3D      		cpi r24,-33
+ 310 005a 2CE5      		ldi r18,92
+ 311 005c 9207      		cpc r25,r18
+ 312 005e 01F4      		brne .+2
+ 313 0060 00C0      		rjmp .L24
+ 314 0062 803E      		cpi r24,-32
+ 315 0064 9C45      		sbci r25,92
+ 316 0066 01F4      		brne .L38
+ 404:keyboards/splitography/keymaps/multi/keymap.c ****         base_n = base_n | BASE_2;
+ 317               		.loc 1 404 0
+ 318 0068 CA81      		ldd r28,Y+2
+ 319 006a 8091 0000 		lds r24,base_n
+ 320               	.LVL30:
+ 321 006e CC23      		tst r28
+ 322 0070 01F4      		brne .+2
+ 323 0072 00C0      		rjmp .L35
+ 405:keyboards/splitography/keymaps/multi/keymap.c ****         if (base_n == BASE_12) { base_layer(); }
+ 324               		.loc 1 405 0
+ 325 0074 8260      		ori r24,lo8(2)
+ 326 0076 00C0      		rjmp .L59
+ 327               	.LVL31:
+ 328               	.L23:
+ 375:keyboards/splitography/keymaps/multi/keymap.c ****     case QWERTY:
+ 329               		.loc 1 375 0
+ 330 0078 833E      		cpi r24,-29
+ 331 007a 2CE5      		ldi r18,92
+ 332 007c 9207      		cpc r25,r18
+ 333 007e 01F4      		brne .+2
+ 334 0080 00C0      		rjmp .L26
+ 335 0082 00F4      		brsh .+2
+ 336 0084 00C0      		rjmp .L27
+ 337 0086 843E      		cpi r24,-28
+ 338 0088 9C45      		sbci r25,92
+ 339 008a 01F4      		brne .L38
+ 421:keyboards/splitography/keymaps/multi/keymap.c ****         layer_on        (_ORANGE);
+ 340               		.loc 1 421 0
+ 341 008c CA81      		ldd r28,Y+2
+ 422:keyboards/splitography/keymaps/multi/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 342               		.loc 1 422 0
+ 343 008e 87E0      		ldi r24,lo8(7)
+ 344               	.LVL32:
+ 345 0090 00C0      		rjmp .L61
+ 346               	.LVL33:
+ 347               	.L19:
+ 377:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 348               		.loc 1 377 0
+ 349 0092 8A81      		ldd r24,Y+2
+ 350               	.LVL34:
+ 351 0094 8111      		cpse r24,__zero_reg__
+ 352 0096 00C0      		rjmp .L29
+ 353               	.LVL35:
+ 354               	.L54:
+ 435:keyboards/splitography/keymaps/multi/keymap.c ****   }
+ 355               		.loc 1 435 0 discriminator 1
+ 356 0098 C0E0      		ldi r28,0
+ 357 009a 00C0      		rjmp .L12
+ 358               	.LVL36:
+ 359               	.L29:
+ 377:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 360               		.loc 1 377 0 discriminator 1
+ 361 009c 0E94 0000 		call qwerty
+ 362               	.LVL37:
+ 363 00a0 00C0      		rjmp .L54
+ 364               	.LVL38:
+ 365               	.L16:
+ 380:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 366               		.loc 1 380 0
+ 367 00a2 8A81      		ldd r24,Y+2
+ 368               	.LVL39:
+ 369 00a4 8823      		tst r24
+ 370 00a6 01F0      		breq .L54
+ 380:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 371               		.loc 1 380 0 is_stmt 0 discriminator 1
+ 372 00a8 0E94 0000 		call dvorak
+ 373               	.LVL40:
+ 374 00ac 00C0      		rjmp .L54
+ 375               	.LVL41:
+ 376               	.L18:
+ 383:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) { register_code(KC_SLSH); }
+ 377               		.loc 1 383 0 is_stmt 1
+ 378 00ae 8091 0000 		lds r24,base_layer
+ 379 00b2 9091 0000 		lds r25,base_layer+1
+ 380               	.LVL42:
+ 381 00b6 8050      		subi r24,lo8(gs(dvorak))
+ 382 00b8 9040      		sbci r25,hi8(gs(dvorak))
+ 383 00ba 01F0      		breq .+2
+ 384 00bc 00C0      		rjmp .L38
+ 383:keyboards/splitography/keymaps/multi/keymap.c ****       if (record->event.pressed) { register_code(KC_SLSH); }
+ 385               		.loc 1 383 0 is_stmt 0 discriminator 1
+ 386 00be 6091 0000 		lds r22,layer_state
+ 387 00c2 7091 0000 		lds r23,layer_state+1
+ 388 00c6 8091 0000 		lds r24,layer_state+2
+ 389 00ca 9091 0000 		lds r25,layer_state+3
+ 390               	.LVL43:
+ 391 00ce 0E94 0000 		call biton32
+ 392               	.LVL44:
+ 393 00d2 8630      		cpi r24,lo8(6)
+ 394 00d4 01F0      		breq .+2
+ 395 00d6 00C0      		rjmp .L38
+ 384:keyboards/splitography/keymaps/multi/keymap.c ****       else                       { unregister_code(KC_SLSH); }
+ 396               		.loc 1 384 0 is_stmt 1
+ 397 00d8 CA81      		ldd r28,Y+2
+ 398               	.LVL45:
+ 399 00da 88E3      		ldi r24,lo8(56)
+ 400 00dc CC23      		tst r28
+ 401 00de 01F0      		breq .L33
+ 384:keyboards/splitography/keymaps/multi/keymap.c ****       else                       { unregister_code(KC_SLSH); }
+ 402               		.loc 1 384 0 is_stmt 0 discriminator 1
+ 403 00e0 0E94 0000 		call register_code
+ 404               	.LVL46:
+ 405 00e4 00C0      		rjmp .L54
+ 406               	.L33:
+ 385:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 407               		.loc 1 385 0 is_stmt 1
+ 408 00e6 0E94 0000 		call unregister_code
+ 409               	.LVL47:
+ 410               	.L12:
+ 438:keyboards/splitography/keymaps/multi/keymap.c **** }
+ 411               		.loc 1 438 0
+ 412 00ea 8C2F      		mov r24,r28
+ 413               	/* epilogue start */
+ 414 00ec DF91      		pop r29
+ 415 00ee CF91      		pop r28
+ 416 00f0 0895      		ret
+ 417               	.LVL48:
+ 418               	.L20:
+ 388:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 419               		.loc 1 388 0
+ 420 00f2 8A81      		ldd r24,Y+2
+ 421               	.LVL49:
+ 422 00f4 8823      		tst r24
+ 423 00f6 01F0      		breq .L54
+ 388:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 424               		.loc 1 388 0 is_stmt 0 discriminator 1
+ 425 00f8 0E94 0000 		call colemak
+ 426               	.LVL50:
+ 427 00fc 00C0      		rjmp .L54
+ 428               	.LVL51:
+ 429               	.L14:
+ 394:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 430               		.loc 1 394 0 is_stmt 1
+ 431 00fe 8A81      		ldd r24,Y+2
+ 432               	.LVL52:
+ 433 0100 8823      		tst r24
+ 434 0102 01F0      		breq .L54
+ 435               	.L57:
+ 406:keyboards/splitography/keymaps/multi/keymap.c ****       }
+ 436               		.loc 1 406 0 discriminator 1
+ 437 0104 E091 0000 		lds r30,base_layer
+ 438 0108 F091 0000 		lds r31,base_layer+1
+ 439 010c 0995      		icall
+ 440               	.LVL53:
+ 441 010e 00C0      		rjmp .L54
+ 442               	.LVL54:
+ 443               	.L24:
+ 397:keyboards/splitography/keymaps/multi/keymap.c ****         base_n = base_n | BASE_1;
+ 444               		.loc 1 397 0
+ 445 0110 CA81      		ldd r28,Y+2
+ 446 0112 8091 0000 		lds r24,base_n
+ 447               	.LVL55:
+ 448 0116 CC23      		tst r28
+ 449 0118 01F0      		breq .L34
+ 398:keyboards/splitography/keymaps/multi/keymap.c ****         if (base_n == BASE_12) { base_layer(); }
+ 450               		.loc 1 398 0
+ 451 011a 8160      		ori r24,lo8(1)
+ 452               	.L59:
+ 405:keyboards/splitography/keymaps/multi/keymap.c ****         if (base_n == BASE_12) { base_layer(); }
+ 453               		.loc 1 405 0
+ 454 011c 8093 0000 		sts base_n,r24
+ 406:keyboards/splitography/keymaps/multi/keymap.c ****       }
+ 455               		.loc 1 406 0
+ 456 0120 8330      		cpi r24,lo8(3)
+ 457 0122 01F0      		breq .L57
+ 458 0124 00C0      		rjmp .L54
+ 459               	.L34:
+ 401:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 460               		.loc 1 401 0
+ 461 0126 8E7F      		andi r24,lo8(-2)
+ 462               	.L55:
+ 408:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 463               		.loc 1 408 0
+ 464 0128 8093 0000 		sts base_n,r24
+ 465 012c 00C0      		rjmp .L12
+ 466               	.L35:
+ 467 012e 8D7F      		andi r24,lo8(-3)
+ 468 0130 00C0      		rjmp .L55
+ 469               	.LVL56:
+ 470               	.L26:
+ 411:keyboards/splitography/keymaps/multi/keymap.c ****         layer_on        (_BLUE);
+ 471               		.loc 1 411 0
+ 472 0132 CA81      		ldd r28,Y+2
+ 412:keyboards/splitography/keymaps/multi/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 473               		.loc 1 412 0
+ 474 0134 86E0      		ldi r24,lo8(6)
+ 475               	.LVL57:
+ 476               	.L61:
+ 421:keyboards/splitography/keymaps/multi/keymap.c ****         layer_on        (_ORANGE);
+ 477               		.loc 1 421 0
+ 478 0136 CC23      		tst r28
+ 479 0138 01F0      		breq .L37
+ 422:keyboards/splitography/keymaps/multi/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 480               		.loc 1 422 0
+ 481 013a 0E94 0000 		call layer_on
+ 482               	.LVL58:
+ 423:keyboards/splitography/keymaps/multi/keymap.c ****       }
+ 483               		.loc 1 423 0
+ 484 013e 48E0      		ldi r20,lo8(8)
+ 485 0140 67E0      		ldi r22,lo8(7)
+ 486 0142 86E0      		ldi r24,lo8(6)
+ 487 0144 0E94 0000 		call update_tri_layer
+ 488               	.LVL59:
+ 489 0148 00C0      		rjmp .L54
+ 490               	.LVL60:
+ 491               	.L37:
+ 426:keyboards/splitography/keymaps/multi/keymap.c ****         update_tri_layer(_BLUE, _ORANGE, _GREEN);
+ 492               		.loc 1 426 0
+ 493 014a 0E94 0000 		call layer_off
+ 494               	.LVL61:
+ 427:keyboards/splitography/keymaps/multi/keymap.c ****       }
+ 495               		.loc 1 427 0
+ 496 014e 48E0      		ldi r20,lo8(8)
+ 497 0150 67E0      		ldi r22,lo8(7)
+ 498 0152 86E0      		ldi r24,lo8(6)
+ 499 0154 0E94 0000 		call update_tri_layer
+ 500               	.LVL62:
+ 501 0158 00C0      		rjmp .L12
+ 502               	.LVL63:
+ 503               	.L27:
+ 431:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 504               		.loc 1 431 0
+ 505 015a CB01      		movw r24,r22
+ 506               	.LVL64:
+ 507 015c 0E94 0000 		call plover
+ 508               	.LVL65:
+ 509 0160 00C0      		rjmp .L54
+ 510               	.LVL66:
+ 511               	.L22:
+ 434:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 512               		.loc 1 434 0
+ 513 0162 8A81      		ldd r24,Y+2
+ 514               	.LVL67:
+ 515 0164 8823      		tst r24
+ 516 0166 01F4      		brne .+2
+ 517 0168 00C0      		rjmp .L54
+ 434:keyboards/splitography/keymaps/multi/keymap.c ****       return false;
+ 518               		.loc 1 434 0 is_stmt 0 discriminator 1
+ 519 016a 0E94 0000 		call txbolt
+ 520               	.LVL68:
+ 521 016e 00C0      		rjmp .L54
+ 522               		.cfi_endproc
+ 523               	.LFE117:
+ 525               		.section	.text.matrix_init_user,"ax",@progbits
+ 526               	.global	matrix_init_user
+ 528               	matrix_init_user:
+ 529               	.LFB118:
+ 439:keyboards/splitography/keymaps/multi/keymap.c **** 
+ 440:keyboards/splitography/keymaps/multi/keymap.c **** // initialize steno protocol
+ 441:keyboards/splitography/keymaps/multi/keymap.c **** void matrix_init_user(void)
+ 442:keyboards/splitography/keymaps/multi/keymap.c **** {
+ 530               		.loc 1 442 0 is_stmt 1
+ 531               		.cfi_startproc
+ 532               	/* prologue: function */
+ 533               	/* frame size = 0 */
+ 534               	/* stack size = 0 */
+ 535               	.L__stack_usage = 0
+ 443:keyboards/splitography/keymaps/multi/keymap.c ****   steno_set_mode(STENO_MODE_BOLT);
+ 536               		.loc 1 443 0
+ 537 0000 80E0      		ldi r24,0
+ 538 0002 0C94 0000 		jmp steno_set_mode
+ 539               	.LVL69:
+ 540               		.cfi_endproc
+ 541               	.LFE118:
+ 543               	.global	base_layer
+ 544               		.section	.bss.base_layer,"aw",@nobits
+ 547               	base_layer:
+ 548 0000 0000      		.zero	2
+ 549               		.section	.bss.base_n,"aw",@nobits
+ 552               	base_n:
+ 553 0000 00        		.zero	1
+ 554               	.global	keymaps
+ 555               		.section	.progmem.data.keymaps,"a",@progbits
+ 558               	keymaps:
+ 559 0000 2900      		.word	41
+ 560 0002 1400      		.word	20
+ 561 0004 1A00      		.word	26
+ 562 0006 0800      		.word	8
+ 563 0008 1500      		.word	21
+ 564 000a 1700      		.word	23
+ 565 000c 1C00      		.word	28
+ 566 000e 1800      		.word	24
+ 567 0010 0C00      		.word	12
+ 568 0012 1200      		.word	18
+ 569 0014 1300      		.word	19
+ 570 0016 2A00      		.word	42
+ 571 0018 E200      		.word	226
+ 572 001a 0400      		.word	4
+ 573 001c 1600      		.word	22
+ 574 001e 0700      		.word	7
+ 575 0020 0900      		.word	9
+ 576 0022 0A00      		.word	10
+ 577 0024 0B00      		.word	11
+ 578 0026 0D00      		.word	13
+ 579 0028 0E00      		.word	14
+ 580 002a 0F00      		.word	15
+ 581 002c 3300      		.word	51
+ 582 002e 2800      		.word	40
+ 583 0030 E100      		.word	225
+ 584 0032 1D00      		.word	29
+ 585 0034 1B00      		.word	27
+ 586 0036 0600      		.word	6
+ 587 0038 1900      		.word	25
+ 588 003a 0500      		.word	5
+ 589 003c 1100      		.word	17
+ 590 003e 1000      		.word	16
+ 591 0040 3600      		.word	54
+ 592 0042 3700      		.word	55
+ 593 0044 3800      		.word	56
+ 594 0046 E300      		.word	227
+ 595 0048 0000      		.word	0
+ 596 004a 0000      		.word	0
+ 597 004c 0000      		.word	0
+ 598 004e 0000      		.word	0
+ 599 0050 E45C      		.word	23780
+ 600 0052 E35C      		.word	23779
+ 601 0054 2C00      		.word	44
+ 602 0056 E000      		.word	224
+ 603 0058 0000      		.word	0
+ 604 005a 0000      		.word	0
+ 605 005c 0000      		.word	0
+ 606 005e 0000      		.word	0
+ 607 0060 2900      		.word	41
+ 608 0062 3400      		.word	52
+ 609 0064 3600      		.word	54
+ 610 0066 3700      		.word	55
+ 611 0068 1300      		.word	19
+ 612 006a 1C00      		.word	28
+ 613 006c 0900      		.word	9
+ 614 006e 0A00      		.word	10
+ 615 0070 0600      		.word	6
+ 616 0072 1500      		.word	21
+ 617 0074 0F00      		.word	15
+ 618 0076 2A00      		.word	42
+ 619 0078 E200      		.word	226
+ 620 007a 0400      		.word	4
+ 621 007c 1200      		.word	18
+ 622 007e 0800      		.word	8
+ 623 0080 1800      		.word	24
+ 624 0082 0C00      		.word	12
+ 625 0084 0700      		.word	7
+ 626 0086 0B00      		.word	11
+ 627 0088 1700      		.word	23
+ 628 008a 1100      		.word	17
+ 629 008c 1600      		.word	22
+ 630 008e 2800      		.word	40
+ 631 0090 E100      		.word	225
+ 632 0092 3300      		.word	51
+ 633 0094 1400      		.word	20
+ 634 0096 0D00      		.word	13
+ 635 0098 0E00      		.word	14
+ 636 009a 1B00      		.word	27
+ 637 009c 0500      		.word	5
+ 638 009e 1000      		.word	16
+ 639 00a0 1A00      		.word	26
+ 640 00a2 1900      		.word	25
+ 641 00a4 1D00      		.word	29
+ 642 00a6 E300      		.word	227
+ 643 00a8 0000      		.word	0
+ 644 00aa 0000      		.word	0
+ 645 00ac 0000      		.word	0
+ 646 00ae 0000      		.word	0
+ 647 00b0 E45C      		.word	23780
+ 648 00b2 E35C      		.word	23779
+ 649 00b4 2C00      		.word	44
+ 650 00b6 E000      		.word	224
+ 651 00b8 0000      		.word	0
+ 652 00ba 0000      		.word	0
+ 653 00bc 0000      		.word	0
+ 654 00be 0000      		.word	0
+ 655 00c0 2900      		.word	41
+ 656 00c2 1400      		.word	20
+ 657 00c4 1A00      		.word	26
+ 658 00c6 0900      		.word	9
+ 659 00c8 1300      		.word	19
+ 660 00ca 0A00      		.word	10
+ 661 00cc 0D00      		.word	13
+ 662 00ce 0F00      		.word	15
+ 663 00d0 1800      		.word	24
+ 664 00d2 1C00      		.word	28
+ 665 00d4 3300      		.word	51
+ 666 00d6 2A00      		.word	42
+ 667 00d8 E200      		.word	226
+ 668 00da 0400      		.word	4
+ 669 00dc 1500      		.word	21
+ 670 00de 1600      		.word	22
+ 671 00e0 1700      		.word	23
+ 672 00e2 0700      		.word	7
+ 673 00e4 0B00      		.word	11
+ 674 00e6 1100      		.word	17
+ 675 00e8 0800      		.word	8
+ 676 00ea 0C00      		.word	12
+ 677 00ec 1200      		.word	18
+ 678 00ee 2800      		.word	40
+ 679 00f0 E100      		.word	225
+ 680 00f2 1D00      		.word	29
+ 681 00f4 1B00      		.word	27
+ 682 00f6 0600      		.word	6
+ 683 00f8 1900      		.word	25
+ 684 00fa 0500      		.word	5
+ 685 00fc 0E00      		.word	14
+ 686 00fe 1000      		.word	16
+ 687 0100 3600      		.word	54
+ 688 0102 3700      		.word	55
+ 689 0104 3800      		.word	56
+ 690 0106 E300      		.word	227
+ 691 0108 0000      		.word	0
+ 692 010a 0000      		.word	0
+ 693 010c 0000      		.word	0
+ 694 010e 0000      		.word	0
+ 695 0110 E45C      		.word	23780
+ 696 0112 E35C      		.word	23779
+ 697 0114 2C00      		.word	44
+ 698 0116 E000      		.word	224
+ 699 0118 0000      		.word	0
+ 700 011a 0000      		.word	0
+ 701 011c 0000      		.word	0
+ 702 011e 0000      		.word	0
+ 703 0120 2900      		.word	41
+ 704 0122 1400      		.word	20
+ 705 0124 0700      		.word	7
+ 706 0126 1500      		.word	21
+ 707 0128 1A00      		.word	26
+ 708 012a 0500      		.word	5
+ 709 012c 0D00      		.word	13
+ 710 012e 0900      		.word	9
+ 711 0130 1800      		.word	24
+ 712 0132 1300      		.word	19
+ 713 0134 3300      		.word	51
+ 714 0136 2A00      		.word	42
+ 715 0138 E200      		.word	226
+ 716 013a 0400      		.word	4
+ 717 013c 1600      		.word	22
+ 718 013e 0B00      		.word	11
+ 719 0140 1700      		.word	23
+ 720 0142 0A00      		.word	10
+ 721 0144 1C00      		.word	28
+ 722 0146 1100      		.word	17
+ 723 0148 0800      		.word	8
+ 724 014a 1200      		.word	18
+ 725 014c 0C00      		.word	12
+ 726 014e 2800      		.word	40
+ 727 0150 E100      		.word	225
+ 728 0152 1D00      		.word	29
+ 729 0154 1B00      		.word	27
+ 730 0156 1000      		.word	16
+ 731 0158 0600      		.word	6
+ 732 015a 1900      		.word	25
+ 733 015c 0E00      		.word	14
+ 734 015e 0F00      		.word	15
+ 735 0160 3600      		.word	54
+ 736 0162 3700      		.word	55
+ 737 0164 3800      		.word	56
+ 738 0166 E300      		.word	227
+ 739 0168 0000      		.word	0
+ 740 016a 0000      		.word	0
+ 741 016c 0000      		.word	0
+ 742 016e 0000      		.word	0
+ 743 0170 E45C      		.word	23780
+ 744 0172 E35C      		.word	23779
+ 745 0174 2C00      		.word	44
+ 746 0176 E000      		.word	224
+ 747 0178 0000      		.word	0
+ 748 017a 0000      		.word	0
+ 749 017c 0000      		.word	0
+ 750 017e 0000      		.word	0
+ 751 0180 015A      		.word	23041
+ 752 0182 025A      		.word	23042
+ 753 0184 035A      		.word	23043
+ 754 0186 045A      		.word	23044
+ 755 0188 055A      		.word	23045
+ 756 018a 065A      		.word	23046
+ 757 018c 235A      		.word	23075
+ 758 018e 245A      		.word	23076
+ 759 0190 255A      		.word	23077
+ 760 0192 265A      		.word	23078
+ 761 0194 275A      		.word	23079
+ 762 0196 285A      		.word	23080
+ 763 0198 DF5C      		.word	23775
+ 764 019a 075A      		.word	23047
+ 765 019c 095A      		.word	23049
+ 766 019e 0B5A      		.word	23051
+ 767 01a0 0D5A      		.word	23053
+ 768 01a2 115A      		.word	23057
+ 769 01a4 165A      		.word	23062
+ 770 01a6 1A5A      		.word	23066
+ 771 01a8 1C5A      		.word	23068
+ 772 01aa 1E5A      		.word	23070
+ 773 01ac 205A      		.word	23072
+ 774 01ae 225A      		.word	23074
+ 775 01b0 E05C      		.word	23776
+ 776 01b2 085A      		.word	23048
+ 777 01b4 0A5A      		.word	23050
+ 778 01b6 0C5A      		.word	23052
+ 779 01b8 0E5A      		.word	23054
+ 780 01ba 125A      		.word	23058
+ 781 01bc 175A      		.word	23063
+ 782 01be 1B5A      		.word	23067
+ 783 01c0 1D5A      		.word	23069
+ 784 01c2 1F5A      		.word	23071
+ 785 01c4 215A      		.word	23073
+ 786 01c6 295A      		.word	23081
+ 787 01c8 0000      		.word	0
+ 788 01ca 0000      		.word	0
+ 789 01cc 0000      		.word	0
+ 790 01ce 0000      		.word	0
+ 791 01d0 0F5A      		.word	23055
+ 792 01d2 105A      		.word	23056
+ 793 01d4 185A      		.word	23064
+ 794 01d6 195A      		.word	23065
+ 795 01d8 0000      		.word	0
+ 796 01da 0000      		.word	0
+ 797 01dc 0000      		.word	0
+ 798 01de 0000      		.word	0
+ 799 01e0 1E00      		.word	30
+ 800 01e2 1E00      		.word	30
+ 801 01e4 1E00      		.word	30
+ 802 01e6 1E00      		.word	30
+ 803 01e8 1E00      		.word	30
+ 804 01ea 1E00      		.word	30
+ 805 01ec 1E00      		.word	30
+ 806 01ee 1E00      		.word	30
+ 807 01f0 1E00      		.word	30
+ 808 01f2 1E00      		.word	30
+ 809 01f4 1E00      		.word	30
+ 810 01f6 1E00      		.word	30
+ 811 01f8 DF5C      		.word	23775
+ 812 01fa 1400      		.word	20
+ 813 01fc 1A00      		.word	26
+ 814 01fe 0800      		.word	8
+ 815 0200 1500      		.word	21
+ 816 0202 1700      		.word	23
+ 817 0204 1C00      		.word	28
+ 818 0206 1800      		.word	24
+ 819 0208 0C00      		.word	12
+ 820 020a 1200      		.word	18
+ 821 020c 1300      		.word	19
+ 822 020e 2F00      		.word	47
+ 823 0210 E05C      		.word	23776
+ 824 0212 0400      		.word	4
+ 825 0214 1600      		.word	22
+ 826 0216 0700      		.word	7
+ 827 0218 0900      		.word	9
+ 828 021a 0A00      		.word	10
+ 829 021c 0B00      		.word	11
+ 830 021e 0D00      		.word	13
+ 831 0220 0E00      		.word	14
+ 832 0222 0F00      		.word	15
+ 833 0224 3300      		.word	51
+ 834 0226 3400      		.word	52
+ 835 0228 0000      		.word	0
+ 836 022a 0000      		.word	0
+ 837 022c 0000      		.word	0
+ 838 022e 0000      		.word	0
+ 839 0230 0600      		.word	6
+ 840 0232 1900      		.word	25
+ 841 0234 1100      		.word	17
+ 842 0236 1000      		.word	16
+ 843 0238 0000      		.word	0
+ 844 023a 0000      		.word	0
+ 845 023c 0000      		.word	0
+ 846 023e 0000      		.word	0
+ 847 0240 3500      		.word	53
+ 848 0242 1E00      		.word	30
+ 849 0244 1F00      		.word	31
+ 850 0246 2000      		.word	32
+ 851 0248 2100      		.word	33
+ 852 024a 2200      		.word	34
+ 853 024c 2300      		.word	35
+ 854 024e 2400      		.word	36
+ 855 0250 2500      		.word	37
+ 856 0252 2600      		.word	38
+ 857 0254 2700      		.word	39
+ 858 0256 0000      		.word	0
+ 859 0258 E200      		.word	226
+ 860 025a AD00      		.word	173
+ 861 025c AC00      		.word	172
+ 862 025e AE00      		.word	174
+ 863 0260 AB00      		.word	171
+ 864 0262 A900      		.word	169
+ 865 0264 0000      		.word	0
+ 866 0266 0000      		.word	0
+ 867 0268 0000      		.word	0
+ 868 026a 2F00      		.word	47
+ 869 026c 3000      		.word	48
+ 870 026e 3400      		.word	52
+ 871 0270 E100      		.word	225
+ 872 0272 1D01      		.word	285
+ 873 0274 1B01      		.word	283
+ 874 0276 0601      		.word	262
+ 875 0278 1901      		.word	281
+ 876 027a AA00      		.word	170
+ 877 027c A800      		.word	168
+ 878 027e 0000      		.word	0
+ 879 0280 0000      		.word	0
+ 880 0282 2D00      		.word	45
+ 881 0284 2E00      		.word	46
+ 882 0286 E300      		.word	227
+ 883 0288 0000      		.word	0
+ 884 028a 0000      		.word	0
+ 885 028c 0000      		.word	0
+ 886 028e 0000      		.word	0
+ 887 0290 E45C      		.word	23780
+ 888 0292 0100      		.word	1
+ 889 0294 4C00      		.word	76
+ 890 0296 E000      		.word	224
+ 891 0298 0000      		.word	0
+ 892 029a 0000      		.word	0
+ 893 029c 0000      		.word	0
+ 894 029e 0000      		.word	0
+ 895 02a0 E25C      		.word	23778
+ 896 02a2 3A00      		.word	58
+ 897 02a4 3B00      		.word	59
+ 898 02a6 3C00      		.word	60
+ 899 02a8 3D00      		.word	61
+ 900 02aa 0000      		.word	0
+ 901 02ac 6500      		.word	101
+ 902 02ae 4600      		.word	70
+ 903 02b0 4700      		.word	71
+ 904 02b2 4800      		.word	72
+ 905 02b4 0000      		.word	0
+ 906 02b6 0000      		.word	0
+ 907 02b8 E200      		.word	226
+ 908 02ba 3E00      		.word	62
+ 909 02bc 3F00      		.word	63
+ 910 02be 4000      		.word	64
+ 911 02c0 4100      		.word	65
+ 912 02c2 0000      		.word	0
+ 913 02c4 0000      		.word	0
+ 914 02c6 4900      		.word	73
+ 915 02c8 4A00      		.word	74
+ 916 02ca 4B00      		.word	75
+ 917 02cc 0000      		.word	0
+ 918 02ce 0000      		.word	0
+ 919 02d0 E100      		.word	225
+ 920 02d2 4200      		.word	66
+ 921 02d4 4300      		.word	67
+ 922 02d6 4400      		.word	68
+ 923 02d8 4500      		.word	69
+ 924 02da 0000      		.word	0
+ 925 02dc 0000      		.word	0
+ 926 02de 4C00      		.word	76
+ 927 02e0 4D00      		.word	77
+ 928 02e2 4E00      		.word	78
+ 929 02e4 3100      		.word	49
+ 930 02e6 E300      		.word	227
+ 931 02e8 0000      		.word	0
+ 932 02ea 0000      		.word	0
+ 933 02ec 0000      		.word	0
+ 934 02ee 0000      		.word	0
+ 935 02f0 0100      		.word	1
+ 936 02f2 E35C      		.word	23779
+ 937 02f4 2B00      		.word	43
+ 938 02f6 E000      		.word	224
+ 939 02f8 0000      		.word	0
+ 940 02fa 0000      		.word	0
+ 941 02fc 0000      		.word	0
+ 942 02fe 0000      		.word	0
+ 943 0300 E15C      		.word	23777
+ 944 0302 DA5C      		.word	23770
+ 945 0304 DB5C      		.word	23771
+ 946 0306 DC5C      		.word	23772
+ 947 0308 DD5C      		.word	23773
+ 948 030a 4700      		.word	71
+ 949 030c 5400      		.word	84
+ 950 030e 5F00      		.word	95
+ 951 0310 6000      		.word	96
+ 952 0312 6100      		.word	97
+ 953 0314 2D00      		.word	45
+ 954 0316 0000      		.word	0
+ 955 0318 E200      		.word	226
+ 956 031a 4A00      		.word	74
+ 957 031c 5200      		.word	82
+ 958 031e 4D00      		.word	77
+ 959 0320 4B00      		.word	75
+ 960 0322 3900      		.word	57
+ 961 0324 5500      		.word	85
+ 962 0326 5C00      		.word	92
+ 963 0328 5D00      		.word	93
+ 964 032a 5E00      		.word	94
+ 965 032c 5700      		.word	87
+ 966 032e 2800      		.word	40
+ 967 0330 E100      		.word	225
+ 968 0332 5000      		.word	80
+ 969 0334 5100      		.word	81
+ 970 0336 4F00      		.word	79
+ 971 0338 4E00      		.word	78
+ 972 033a 0953      		.word	21257
+ 973 033c 6200      		.word	98
+ 974 033e 5900      		.word	89
+ 975 0340 5A00      		.word	90
+ 976 0342 5B00      		.word	91
+ 977 0344 0000      		.word	0
+ 978 0346 E300      		.word	227
+ 979 0348 0000      		.word	0
+ 980 034a 0000      		.word	0
+ 981 034c 0000      		.word	0
+ 982 034e 0000      		.word	0
+ 983 0350 0100      		.word	1
+ 984 0352 0100      		.word	1
+ 985 0354 0000      		.word	0
+ 986 0356 E000      		.word	224
+ 987 0358 0000      		.word	0
+ 988 035a 0000      		.word	0
+ 989 035c 0000      		.word	0
+ 990 035e 0000      		.word	0
+ 991 0360 0000      		.word	0
+ 992 0362 0000      		.word	0
+ 993 0364 0000      		.word	0
+ 994 0366 0000      		.word	0
+ 995 0368 0000      		.word	0
+ 996 036a 0000      		.word	0
+ 997 036c 5400      		.word	84
+ 998 036e 5F00      		.word	95
+ 999 0370 6000      		.word	96
+ 1000 0372 6100      		.word	97
+ 1001 0374 5600      		.word	86
+ 1002 0376 0000      		.word	0
+ 1003 0378 E200      		.word	226
+ 1004 037a 4A00      		.word	74
+ 1005 037c 5200      		.word	82
+ 1006 037e 4D00      		.word	77
+ 1007 0380 4B00      		.word	75
+ 1008 0382 0000      		.word	0
+ 1009 0384 5500      		.word	85
+ 1010 0386 5C00      		.word	92
+ 1011 0388 5D00      		.word	93
+ 1012 038a 5E00      		.word	94
+ 1013 038c 5700      		.word	87
+ 1014 038e 2800      		.word	40
+ 1015 0390 E100      		.word	225
+ 1016 0392 5000      		.word	80
+ 1017 0394 5100      		.word	81
+ 1018 0396 4F00      		.word	79
+ 1019 0398 4E00      		.word	78
+ 1020 039a DE5C      		.word	23774
+ 1021 039c 6200      		.word	98
+ 1022 039e 5900      		.word	89
+ 1023 03a0 5A00      		.word	90
+ 1024 03a2 5B00      		.word	91
+ 1025 03a4 0000      		.word	0
+ 1026 03a6 E300      		.word	227
+ 1027 03a8 0000      		.word	0
+ 1028 03aa 0000      		.word	0
+ 1029 03ac 0000      		.word	0
+ 1030 03ae 0000      		.word	0
+ 1031 03b0 0000      		.word	0
+ 1032 03b2 0000      		.word	0
+ 1033 03b4 0000      		.word	0
+ 1034 03b6 E000      		.word	224
+ 1035 03b8 0000      		.word	0
+ 1036 03ba 0000      		.word	0
+ 1037 03bc 0000      		.word	0
+ 1038 03be 0000      		.word	0
+ 1039               		.text
+ 1040               	.Letext0:
+ 1041               		.file 2 "/usr/avr/include/stdint.h"
+ 1042               		.file 3 "/usr/lib/gcc/avr/7.3.0/include/stddef.h"
+ 1043               		.file 4 "./tmk_core/common/keyboard.h"
+ 1044               		.file 5 "./tmk_core/common/keycode.h"
+ 1045               		.file 6 "./tmk_core/common/action.h"
+ 1046               		.file 7 "./lib/lufa/LUFA/Drivers/USB/Core/AVR8/../StdRequestType.h"
+ 1047               		.file 8 "./lib/lufa/LUFA/Drivers/USB/Core/AVR8/../DeviceStandardReq.h"
+ 1048               		.file 9 "./lib/lufa/LUFA/Drivers/USB/Core/USBTask.h"
+ 1049               		.file 10 "./lib/lufa/LUFA/Drivers/USB/Core/HostStandardReq.h"
+ 1050               		.file 11 "/usr/avr/include/stdio.h"
+ 1051               		.file 12 "./tmk_core/common/report.h"
+ 1052               		.file 13 "./tmk_core/common/host.h"
+ 1053               		.file 14 "./tmk_core/common/debug.h"
+ 1054               		.file 15 "./quantum/keycode_config.h"
+ 1055               		.file 16 "./quantum/quantum_keycodes.h"
+ 1056               		.file 17 "./quantum/keymap.h"
+ 1057               		.file 18 "./tmk_core/common/action_layer.h"
+ 1058               		.file 19 "./tmk_core/common/timer.h"
+ 1059               		.file 20 "./tmk_core/common/action_util.h"
+ 1060               		.file 21 "/usr/avr/include/stdlib.h"
+ 1061               		.file 22 "./quantum/quantum.h"
+ 1062               		.file 23 "./quantum/keymap_extras/keymap_steno.h"
+ 1063               		.file 24 "./quantum/process_keycode/process_steno.h"
+ 1064               		.file 25 "./tmk_core/common/util.h"
+ 1065               		.file 26 "./tmk_core/common/eeconfig.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 keymap.c
+     /tmp/ccLTCg8Y.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccLTCg8Y.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccLTCg8Y.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccLTCg8Y.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccLTCg8Y.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccLTCg8Y.s:13     .text.clear_layers:0000000000000000 clear_layers
+     /tmp/ccLTCg8Y.s:50     .text.qwerty:0000000000000000 qwerty
+     /tmp/ccLTCg8Y.s:547    .bss.base_layer:0000000000000000 base_layer
+     /tmp/ccLTCg8Y.s:552    .bss.base_n:0000000000000000 base_n
+     /tmp/ccLTCg8Y.s:78     .text.dvorak:0000000000000000 dvorak
+     /tmp/ccLTCg8Y.s:106    .text.colemak:0000000000000000 colemak
+     /tmp/ccLTCg8Y.s:134    .text.workman:0000000000000000 workman
+     /tmp/ccLTCg8Y.s:162    .text.plover:0000000000000000 plover
+     /tmp/ccLTCg8Y.s:215    .text.txbolt:0000000000000000 txbolt
+     /tmp/ccLTCg8Y.s:236    .text.process_record_user:0000000000000000 process_record_user
+     /tmp/ccLTCg8Y.s:528    .text.matrix_init_user:0000000000000000 matrix_init_user
+     /tmp/ccLTCg8Y.s:558    .progmem.data.keymaps:0000000000000000 keymaps
+
+UNDEFINED SYMBOLS
+layer_off
+set_single_persistent_default_layer
+layer_on
+eeconfig_is_enabled
+eeconfig_init
+eeconfig_read_keymap
+keymap_config
+eeconfig_update_keymap
+layer_state
+biton32
+register_code
+unregister_code
+update_tri_layer
+steno_set_mode
+__do_clear_bss

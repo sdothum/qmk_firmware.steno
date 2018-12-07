@@ -1,0 +1,1 @@
+-Wl,--gc-sections -Wl,-Map=./.build/splitography_beaklti.map,--cref     -lm 

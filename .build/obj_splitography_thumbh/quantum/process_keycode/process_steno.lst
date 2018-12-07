@@ -1,0 +1,938 @@
+   1               		.file	"process_steno.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text.steno_clear_state,"ax",@progbits
+  11               	.global	steno_clear_state
+  13               	steno_clear_state:
+  14               	.LFB110:
+  15               		.file 1 "quantum/process_keycode/process_steno.c"
+   1:quantum/process_keycode/process_steno.c **** /* Copyright 2017 Joseph Wasson
+   2:quantum/process_keycode/process_steno.c ****  *
+   3:quantum/process_keycode/process_steno.c ****  * This program is free software: you can redistribute it and/or modify
+   4:quantum/process_keycode/process_steno.c ****  * it under the terms of the GNU General Public License as published by
+   5:quantum/process_keycode/process_steno.c ****  * the Free Software Foundation, either version 2 of the License, or
+   6:quantum/process_keycode/process_steno.c ****  * (at your option) any later version.
+   7:quantum/process_keycode/process_steno.c ****  *
+   8:quantum/process_keycode/process_steno.c ****  * This program is distributed in the hope that it will be useful,
+   9:quantum/process_keycode/process_steno.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  10:quantum/process_keycode/process_steno.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  11:quantum/process_keycode/process_steno.c ****  * GNU General Public License for more details.
+  12:quantum/process_keycode/process_steno.c ****  *
+  13:quantum/process_keycode/process_steno.c ****  * You should have received a copy of the GNU General Public License
+  14:quantum/process_keycode/process_steno.c ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  15:quantum/process_keycode/process_steno.c ****  */
+  16:quantum/process_keycode/process_steno.c **** #include "process_steno.h"
+  17:quantum/process_keycode/process_steno.c **** #include "quantum_keycodes.h"
+  18:quantum/process_keycode/process_steno.c **** #include "eeprom.h"
+  19:quantum/process_keycode/process_steno.c **** #include "keymap_steno.h"
+  20:quantum/process_keycode/process_steno.c **** #include "virtser.h"
+  21:quantum/process_keycode/process_steno.c **** 
+  22:quantum/process_keycode/process_steno.c **** // TxBolt Codes
+  23:quantum/process_keycode/process_steno.c **** #define TXB_NUL 0
+  24:quantum/process_keycode/process_steno.c **** #define TXB_S_L 0b00000001
+  25:quantum/process_keycode/process_steno.c **** #define TXB_T_L 0b00000010
+  26:quantum/process_keycode/process_steno.c **** #define TXB_K_L 0b00000100
+  27:quantum/process_keycode/process_steno.c **** #define TXB_P_L 0b00001000
+  28:quantum/process_keycode/process_steno.c **** #define TXB_W_L 0b00010000
+  29:quantum/process_keycode/process_steno.c **** #define TXB_H_L 0b00100000
+  30:quantum/process_keycode/process_steno.c **** #define TXB_R_L 0b01000001
+  31:quantum/process_keycode/process_steno.c **** #define TXB_A_L 0b01000010
+  32:quantum/process_keycode/process_steno.c **** #define TXB_O_L 0b01000100
+  33:quantum/process_keycode/process_steno.c **** #define TXB_STR 0b01001000
+  34:quantum/process_keycode/process_steno.c **** #define TXB_E_R 0b01010000
+  35:quantum/process_keycode/process_steno.c **** #define TXB_U_R 0b01100000
+  36:quantum/process_keycode/process_steno.c **** #define TXB_F_R 0b10000001
+  37:quantum/process_keycode/process_steno.c **** #define TXB_R_R 0b10000010
+  38:quantum/process_keycode/process_steno.c **** #define TXB_P_R 0b10000100
+  39:quantum/process_keycode/process_steno.c **** #define TXB_B_R 0b10001000
+  40:quantum/process_keycode/process_steno.c **** #define TXB_L_R 0b10010000
+  41:quantum/process_keycode/process_steno.c **** #define TXB_G_R 0b10100000
+  42:quantum/process_keycode/process_steno.c **** #define TXB_T_R 0b11000001
+  43:quantum/process_keycode/process_steno.c **** #define TXB_S_R 0b11000010
+  44:quantum/process_keycode/process_steno.c **** #define TXB_D_R 0b11000100
+  45:quantum/process_keycode/process_steno.c **** #define TXB_Z_R 0b11001000
+  46:quantum/process_keycode/process_steno.c **** #define TXB_NUM 0b11010000
+  47:quantum/process_keycode/process_steno.c **** 
+  48:quantum/process_keycode/process_steno.c **** #define TXB_GRP0 0b00000000
+  49:quantum/process_keycode/process_steno.c **** #define TXB_GRP1 0b01000000
+  50:quantum/process_keycode/process_steno.c **** #define TXB_GRP2 0b10000000
+  51:quantum/process_keycode/process_steno.c **** #define TXB_GRP3 0b11000000
+  52:quantum/process_keycode/process_steno.c **** #define TXB_GRPMASK 0b11000000
+  53:quantum/process_keycode/process_steno.c **** 
+  54:quantum/process_keycode/process_steno.c **** #define TXB_GET_GROUP(code) ((code & TXB_GRPMASK) >> 6)
+  55:quantum/process_keycode/process_steno.c **** 
+  56:quantum/process_keycode/process_steno.c **** #define BOLT_STATE_SIZE 4
+  57:quantum/process_keycode/process_steno.c **** #define GEMINI_STATE_SIZE 6
+  58:quantum/process_keycode/process_steno.c **** #define MAX_STATE_SIZE GEMINI_STATE_SIZE
+  59:quantum/process_keycode/process_steno.c **** 
+  60:quantum/process_keycode/process_steno.c **** uint8_t state[MAX_STATE_SIZE] = {0};
+  61:quantum/process_keycode/process_steno.c **** uint8_t pressed = 0;
+  62:quantum/process_keycode/process_steno.c **** steno_mode_t mode;
+  63:quantum/process_keycode/process_steno.c **** 
+  64:quantum/process_keycode/process_steno.c **** uint8_t boltmap[64] = {
+  65:quantum/process_keycode/process_steno.c ****   TXB_NUL, TXB_NUM, TXB_NUM, TXB_NUM, TXB_NUM, TXB_NUM, TXB_NUM,
+  66:quantum/process_keycode/process_steno.c ****   TXB_S_L, TXB_S_L, TXB_T_L, TXB_K_L, TXB_P_L, TXB_W_L, TXB_H_L,
+  67:quantum/process_keycode/process_steno.c ****   TXB_R_L, TXB_A_L, TXB_O_L, TXB_STR, TXB_STR, TXB_NUL, TXB_NUL,
+  68:quantum/process_keycode/process_steno.c ****   TXB_NUL, TXB_STR, TXB_STR, TXB_E_R, TXB_U_R, TXB_F_R, TXB_R_R,
+  69:quantum/process_keycode/process_steno.c ****   TXB_P_R, TXB_B_R, TXB_L_R, TXB_G_R, TXB_T_R, TXB_S_R, TXB_D_R,
+  70:quantum/process_keycode/process_steno.c ****   TXB_NUM, TXB_NUM, TXB_NUM, TXB_NUM, TXB_NUM, TXB_NUM, TXB_Z_R
+  71:quantum/process_keycode/process_steno.c **** };
+  72:quantum/process_keycode/process_steno.c **** 
+  73:quantum/process_keycode/process_steno.c **** void steno_clear_state(void) {
+  16               		.loc 1 73 0
+  17               		.cfi_startproc
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+  74:quantum/process_keycode/process_steno.c ****   __builtin_memset(state, 0, sizeof(state));
+  22               		.loc 1 74 0
+  23 0000 E0E0      		ldi r30,lo8(state)
+  24 0002 F0E0      		ldi r31,hi8(state)
+  25 0004 86E0      		ldi r24,lo8(6)
+  26 0006 DF01      		movw r26,r30
+  27               		0:
+  28 0008 1D92      		st X+,__zero_reg__
+  29 000a 8A95      		dec r24
+  30 000c 01F4      		brne 0b
+  31               	/* epilogue start */
+  75:quantum/process_keycode/process_steno.c **** }
+  32               		.loc 1 75 0
+  33 000e 0895      		ret
+  34               		.cfi_endproc
+  35               	.LFE110:
+  37               		.section	.text.steno_init,"ax",@progbits
+  38               	.global	steno_init
+  40               	steno_init:
+  41               	.LFB111:
+  76:quantum/process_keycode/process_steno.c **** 
+  77:quantum/process_keycode/process_steno.c **** void steno_init() {
+  42               		.loc 1 77 0
+  43               		.cfi_startproc
+  44               	/* prologue: function */
+  45               	/* frame size = 0 */
+  46               	/* stack size = 0 */
+  47               	.L__stack_usage = 0
+  78:quantum/process_keycode/process_steno.c ****   if (!eeconfig_is_enabled()) {
+  48               		.loc 1 78 0
+  49 0000 0E94 0000 		call eeconfig_is_enabled
+  50               	.LVL0:
+  51 0004 8111      		cpse r24,__zero_reg__
+  52 0006 00C0      		rjmp .L3
+  79:quantum/process_keycode/process_steno.c ****     eeconfig_init();
+  53               		.loc 1 79 0
+  54 0008 0E94 0000 		call eeconfig_init
+  55               	.LVL1:
+  56               	.L3:
+  80:quantum/process_keycode/process_steno.c ****   }
+  81:quantum/process_keycode/process_steno.c ****   mode = eeprom_read_byte(EECONFIG_STENOMODE);
+  57               		.loc 1 81 0
+  58 000c 8DE0      		ldi r24,lo8(13)
+  59 000e 90E0      		ldi r25,0
+  60 0010 0E94 0000 		call eeprom_read_byte
+  61               	.LVL2:
+  62 0014 8093 0000 		sts mode,r24
+  63               	/* epilogue start */
+  82:quantum/process_keycode/process_steno.c **** }
+  64               		.loc 1 82 0
+  65 0018 0895      		ret
+  66               		.cfi_endproc
+  67               	.LFE111:
+  69               		.section	.text.steno_set_mode,"ax",@progbits
+  70               	.global	steno_set_mode
+  72               	steno_set_mode:
+  73               	.LFB112:
+  83:quantum/process_keycode/process_steno.c **** 
+  84:quantum/process_keycode/process_steno.c **** void steno_set_mode(steno_mode_t new_mode) {
+  74               		.loc 1 84 0
+  75               		.cfi_startproc
+  76               	.LVL3:
+  77 0000 CF93      		push r28
+  78               	.LCFI0:
+  79               		.cfi_def_cfa_offset 3
+  80               		.cfi_offset 28, -2
+  81               	/* prologue: function */
+  82               	/* frame size = 0 */
+  83               	/* stack size = 1 */
+  84               	.L__stack_usage = 1
+  85 0002 C82F      		mov r28,r24
+  85:quantum/process_keycode/process_steno.c ****   steno_clear_state();
+  86               		.loc 1 85 0
+  87 0004 0E94 0000 		call steno_clear_state
+  88               	.LVL4:
+  86:quantum/process_keycode/process_steno.c ****   mode = new_mode;
+  89               		.loc 1 86 0
+  90 0008 C093 0000 		sts mode,r28
+  87:quantum/process_keycode/process_steno.c ****   eeprom_update_byte(EECONFIG_STENOMODE, mode);
+  91               		.loc 1 87 0
+  92 000c 6C2F      		mov r22,r28
+  93 000e 8DE0      		ldi r24,lo8(13)
+  94 0010 90E0      		ldi r25,0
+  95               	/* epilogue start */
+  88:quantum/process_keycode/process_steno.c **** }
+  96               		.loc 1 88 0
+  97 0012 CF91      		pop r28
+  98               	.LVL5:
+  87:quantum/process_keycode/process_steno.c ****   eeprom_update_byte(EECONFIG_STENOMODE, mode);
+  99               		.loc 1 87 0
+ 100 0014 0C94 0000 		jmp eeprom_update_byte
+ 101               	.LVL6:
+ 102               		.cfi_endproc
+ 103               	.LFE112:
+ 105               		.section	.text.send_steno_state,"ax",@progbits
+ 106               	.global	send_steno_state
+ 108               	send_steno_state:
+ 109               	.LFB113:
+  89:quantum/process_keycode/process_steno.c **** 
+  90:quantum/process_keycode/process_steno.c **** void send_steno_state(uint8_t size, bool send_empty) {
+ 110               		.loc 1 90 0
+ 111               		.cfi_startproc
+ 112               	.LVL7:
+ 113 0000 FF92      		push r15
+ 114               	.LCFI1:
+ 115               		.cfi_def_cfa_offset 3
+ 116               		.cfi_offset 15, -2
+ 117 0002 0F93      		push r16
+ 118               	.LCFI2:
+ 119               		.cfi_def_cfa_offset 4
+ 120               		.cfi_offset 16, -3
+ 121 0004 1F93      		push r17
+ 122               	.LCFI3:
+ 123               		.cfi_def_cfa_offset 5
+ 124               		.cfi_offset 17, -4
+ 125 0006 CF93      		push r28
+ 126               	.LCFI4:
+ 127               		.cfi_def_cfa_offset 6
+ 128               		.cfi_offset 28, -5
+ 129 0008 DF93      		push r29
+ 130               	.LCFI5:
+ 131               		.cfi_def_cfa_offset 7
+ 132               		.cfi_offset 29, -6
+ 133               	/* prologue: function */
+ 134               	/* frame size = 0 */
+ 135               	/* stack size = 5 */
+ 136               	.L__stack_usage = 5
+ 137 000a D82F      		mov r29,r24
+ 138 000c F62E      		mov r15,r22
+ 139               	.LVL8:
+ 140 000e 00E0      		ldi r16,lo8(state)
+ 141 0010 10E0      		ldi r17,hi8(state)
+ 142               	.LBB2:
+  91:quantum/process_keycode/process_steno.c ****   for (uint8_t i = 0; i < size; ++i) {
+ 143               		.loc 1 91 0
+ 144 0012 C0E0      		ldi r28,0
+ 145               	.LVL9:
+ 146               	.L6:
+ 147               		.loc 1 91 0 is_stmt 0 discriminator 1
+ 148 0014 CD13      		cpse r28,r29
+ 149 0016 00C0      		rjmp .L9
+ 150               	/* epilogue start */
+ 151               	.LBE2:
+  92:quantum/process_keycode/process_steno.c ****     if (state[i] || send_empty) {
+  93:quantum/process_keycode/process_steno.c ****       virtser_send(state[i]);
+  94:quantum/process_keycode/process_steno.c ****     }
+  95:quantum/process_keycode/process_steno.c ****   }
+  96:quantum/process_keycode/process_steno.c ****   steno_clear_state();
+  97:quantum/process_keycode/process_steno.c **** }
+ 152               		.loc 1 97 0 is_stmt 1
+ 153 0018 DF91      		pop r29
+ 154               	.LVL10:
+ 155 001a CF91      		pop r28
+ 156               	.LVL11:
+ 157 001c 1F91      		pop r17
+ 158 001e 0F91      		pop r16
+ 159 0020 FF90      		pop r15
+ 160               	.LVL12:
+  96:quantum/process_keycode/process_steno.c **** }
+ 161               		.loc 1 96 0
+ 162 0022 0C94 0000 		jmp steno_clear_state
+ 163               	.LVL13:
+ 164               	.L9:
+ 165               	.LBB3:
+  92:quantum/process_keycode/process_steno.c ****     if (state[i] || send_empty) {
+ 166               		.loc 1 92 0
+ 167 0026 F801      		movw r30,r16
+ 168 0028 8191      		ld r24,Z+
+ 169 002a 8F01      		movw r16,r30
+ 170 002c 8111      		cpse r24,__zero_reg__
+ 171 002e 00C0      		rjmp .L7
+  92:quantum/process_keycode/process_steno.c ****     if (state[i] || send_empty) {
+ 172               		.loc 1 92 0 is_stmt 0 discriminator 1
+ 173 0030 F110      		cpse r15,__zero_reg__
+ 174               	.L7:
+  93:quantum/process_keycode/process_steno.c ****     }
+ 175               		.loc 1 93 0 is_stmt 1
+ 176 0032 0E94 0000 		call virtser_send
+ 177               	.LVL14:
+ 178               	.L8:
+  91:quantum/process_keycode/process_steno.c ****     if (state[i] || send_empty) {
+ 179               		.loc 1 91 0 discriminator 2
+ 180 0036 CF5F      		subi r28,lo8(-(1))
+ 181               	.LVL15:
+ 182 0038 00C0      		rjmp .L6
+ 183               	.LBE3:
+ 184               		.cfi_endproc
+ 185               	.LFE113:
+ 187               		.section	.text.update_state_bolt,"ax",@progbits
+ 188               	.global	update_state_bolt
+ 190               	update_state_bolt:
+ 191               	.LFB114:
+  98:quantum/process_keycode/process_steno.c **** 
+  99:quantum/process_keycode/process_steno.c **** bool update_state_bolt(uint8_t key) {
+ 192               		.loc 1 99 0
+ 193               		.cfi_startproc
+ 194               	.LVL16:
+ 195               	/* prologue: function */
+ 196               	/* frame size = 0 */
+ 197               	/* stack size = 0 */
+ 198               	.L__stack_usage = 0
+ 100:quantum/process_keycode/process_steno.c ****   uint8_t boltcode = boltmap[key];
+ 199               		.loc 1 100 0
+ 200 0000 E82F      		mov r30,r24
+ 201 0002 F0E0      		ldi r31,0
+ 202 0004 E050      		subi r30,lo8(-(boltmap))
+ 203 0006 F040      		sbci r31,hi8(-(boltmap))
+ 204 0008 9081      		ld r25,Z
+ 205               	.LVL17:
+ 101:quantum/process_keycode/process_steno.c ****   state[TXB_GET_GROUP(boltcode)] |= boltcode;
+ 206               		.loc 1 101 0
+ 207 000a E92F      		mov r30,r25
+ 208 000c E295      		swap r30
+ 209 000e E695      		lsr r30
+ 210 0010 E695      		lsr r30
+ 211 0012 E370      		andi r30,lo8(3)
+ 212 0014 F0E0      		ldi r31,0
+ 213 0016 E050      		subi r30,lo8(-(state))
+ 214 0018 F040      		sbci r31,hi8(-(state))
+ 215 001a 8081      		ld r24,Z
+ 216               	.LVL18:
+ 217 001c 892B      		or r24,r25
+ 218 001e 8083      		st Z,r24
+ 102:quantum/process_keycode/process_steno.c ****   return false;
+ 103:quantum/process_keycode/process_steno.c **** }
+ 219               		.loc 1 103 0
+ 220 0020 80E0      		ldi r24,0
+ 221               	/* epilogue start */
+ 222 0022 0895      		ret
+ 223               		.cfi_endproc
+ 224               	.LFE114:
+ 226               		.section	.text.send_state_bolt,"ax",@progbits
+ 227               	.global	send_state_bolt
+ 229               	send_state_bolt:
+ 230               	.LFB115:
+ 104:quantum/process_keycode/process_steno.c **** 
+ 105:quantum/process_keycode/process_steno.c **** bool send_state_bolt(void) {
+ 231               		.loc 1 105 0
+ 232               		.cfi_startproc
+ 233               	/* prologue: function */
+ 234               	/* frame size = 0 */
+ 235               	/* stack size = 0 */
+ 236               	.L__stack_usage = 0
+ 106:quantum/process_keycode/process_steno.c ****   send_steno_state(BOLT_STATE_SIZE, false);
+ 237               		.loc 1 106 0
+ 238 0000 60E0      		ldi r22,0
+ 239 0002 84E0      		ldi r24,lo8(4)
+ 240 0004 0E94 0000 		call send_steno_state
+ 241               	.LVL19:
+ 107:quantum/process_keycode/process_steno.c ****   virtser_send(0); // terminating byte
+ 242               		.loc 1 107 0
+ 243 0008 80E0      		ldi r24,0
+ 244 000a 0E94 0000 		call virtser_send
+ 245               	.LVL20:
+ 108:quantum/process_keycode/process_steno.c ****   return false;
+ 109:quantum/process_keycode/process_steno.c **** }
+ 246               		.loc 1 109 0
+ 247 000e 80E0      		ldi r24,0
+ 248               	/* epilogue start */
+ 249 0010 0895      		ret
+ 250               		.cfi_endproc
+ 251               	.LFE115:
+ 253               		.section	.text.update_state_gemini,"ax",@progbits
+ 254               	.global	update_state_gemini
+ 256               	update_state_gemini:
+ 257               	.LFB116:
+ 110:quantum/process_keycode/process_steno.c **** 
+ 111:quantum/process_keycode/process_steno.c **** bool update_state_gemini(uint8_t key) {
+ 258               		.loc 1 111 0
+ 259               		.cfi_startproc
+ 260               	.LVL21:
+ 261               	/* prologue: function */
+ 262               	/* frame size = 0 */
+ 263               	/* stack size = 0 */
+ 264               	.L__stack_usage = 0
+ 112:quantum/process_keycode/process_steno.c ****   state[key / 7] |= 1 << (6 - (key % 7));
+ 265               		.loc 1 112 0
+ 266 0000 67E0      		ldi r22,lo8(7)
+ 267 0002 0E94 0000 		call __udivmodqi4
+ 268               	.LVL22:
+ 269 0006 E82F      		mov r30,r24
+ 270 0008 F0E0      		ldi r31,0
+ 271 000a E050      		subi r30,lo8(-(state))
+ 272 000c F040      		sbci r31,hi8(-(state))
+ 273 000e 26E0      		ldi r18,lo8(6)
+ 274 0010 30E0      		ldi r19,0
+ 275 0012 291B      		sub r18,r25
+ 276 0014 3109      		sbc r19,__zero_reg__
+ 277 0016 81E0      		ldi r24,lo8(1)
+ 278 0018 90E0      		ldi r25,0
+ 279 001a AC01      		movw r20,r24
+ 280 001c 00C0      		rjmp 2f
+ 281               		1:
+ 282 001e 440F      		lsl r20
+ 283 0020 551F      		rol r21
+ 284               		2:
+ 285 0022 2A95      		dec r18
+ 286 0024 02F4      		brpl 1b
+ 287 0026 8081      		ld r24,Z
+ 288 0028 842B      		or r24,r20
+ 289 002a 8083      		st Z,r24
+ 113:quantum/process_keycode/process_steno.c ****   return false;
+ 114:quantum/process_keycode/process_steno.c **** }
+ 290               		.loc 1 114 0
+ 291 002c 80E0      		ldi r24,0
+ 292               	/* epilogue start */
+ 293 002e 0895      		ret
+ 294               		.cfi_endproc
+ 295               	.LFE116:
+ 297               		.section	.text.send_state_gemini,"ax",@progbits
+ 298               	.global	send_state_gemini
+ 300               	send_state_gemini:
+ 301               	.LFB117:
+ 115:quantum/process_keycode/process_steno.c **** 
+ 116:quantum/process_keycode/process_steno.c **** bool send_state_gemini(void) {
+ 302               		.loc 1 116 0
+ 303               		.cfi_startproc
+ 304               	/* prologue: function */
+ 305               	/* frame size = 0 */
+ 306               	/* stack size = 0 */
+ 307               	.L__stack_usage = 0
+ 117:quantum/process_keycode/process_steno.c ****   state[0] |= 0x80; // Indicate start of packet
+ 308               		.loc 1 117 0
+ 309 0000 E0E0      		ldi r30,lo8(state)
+ 310 0002 F0E0      		ldi r31,hi8(state)
+ 311 0004 8081      		ld r24,Z
+ 312 0006 8068      		ori r24,lo8(-128)
+ 313 0008 8083      		st Z,r24
+ 118:quantum/process_keycode/process_steno.c ****   send_steno_state(GEMINI_STATE_SIZE, true);
+ 314               		.loc 1 118 0
+ 315 000a 61E0      		ldi r22,lo8(1)
+ 316 000c 86E0      		ldi r24,lo8(6)
+ 317 000e 0E94 0000 		call send_steno_state
+ 318               	.LVL23:
+ 119:quantum/process_keycode/process_steno.c ****   return false;
+ 120:quantum/process_keycode/process_steno.c **** }
+ 319               		.loc 1 120 0
+ 320 0012 80E0      		ldi r24,0
+ 321               	/* epilogue start */
+ 322 0014 0895      		ret
+ 323               		.cfi_endproc
+ 324               	.LFE117:
+ 326               		.section	.text.process_steno,"ax",@progbits
+ 327               	.global	process_steno
+ 329               	process_steno:
+ 330               	.LFB118:
+ 121:quantum/process_keycode/process_steno.c **** 
+ 122:quantum/process_keycode/process_steno.c **** bool process_steno(uint16_t keycode, keyrecord_t *record) {
+ 331               		.loc 1 122 0
+ 332               		.cfi_startproc
+ 333               	.LVL24:
+ 334               	/* prologue: function */
+ 335               	/* frame size = 0 */
+ 336               	/* stack size = 0 */
+ 337               	.L__stack_usage = 0
+ 338 0000 9C01      		movw r18,r24
+ 339 0002 FB01      		movw r30,r22
+ 123:quantum/process_keycode/process_steno.c ****   switch (keycode) {
+ 340               		.loc 1 123 0
+ 341 0004 2033      		cpi r18,48
+ 342 0006 8AE5      		ldi r24,90
+ 343 0008 3807      		cpc r19,r24
+ 344 000a 01F0      		breq .L19
+ 345               	.LVL25:
+ 346 000c 00F4      		brsh .L20
+ 347 000e C901      		movw r24,r18
+ 348 0010 9A55      		subi r25,90
+ 349 0012 8A97      		sbiw r24,42
+ 350 0014 00F0      		brlo .L64
+ 351               	.LVL26:
+ 352               	.L48:
+ 124:quantum/process_keycode/process_steno.c ****     case QK_STENO_BOLT:
+ 125:quantum/process_keycode/process_steno.c ****       if (IS_PRESSED(record->event)) {
+ 126:quantum/process_keycode/process_steno.c ****         steno_set_mode(STENO_MODE_BOLT);
+ 127:quantum/process_keycode/process_steno.c ****       }
+ 128:quantum/process_keycode/process_steno.c ****       return false;
+ 129:quantum/process_keycode/process_steno.c **** 
+ 130:quantum/process_keycode/process_steno.c ****     case QK_STENO_GEMINI:
+ 131:quantum/process_keycode/process_steno.c ****       if (IS_PRESSED(record->event)) {
+ 132:quantum/process_keycode/process_steno.c ****         steno_set_mode(STENO_MODE_GEMINI);
+ 133:quantum/process_keycode/process_steno.c ****       }
+ 134:quantum/process_keycode/process_steno.c ****       return false;
+ 135:quantum/process_keycode/process_steno.c **** 
+ 136:quantum/process_keycode/process_steno.c ****     case STN__MIN...STN__MAX:
+ 137:quantum/process_keycode/process_steno.c ****       if (IS_PRESSED(record->event)) {
+ 138:quantum/process_keycode/process_steno.c ****         uint8_t key = keycode - QK_STENO;
+ 139:quantum/process_keycode/process_steno.c ****         ++pressed;
+ 140:quantum/process_keycode/process_steno.c ****         switch(mode) {
+ 141:quantum/process_keycode/process_steno.c ****           case STENO_MODE_BOLT:
+ 142:quantum/process_keycode/process_steno.c ****             return update_state_bolt(key);
+ 143:quantum/process_keycode/process_steno.c ****           case STENO_MODE_GEMINI:
+ 144:quantum/process_keycode/process_steno.c ****             return update_state_gemini(key);
+ 145:quantum/process_keycode/process_steno.c ****           default:
+ 146:quantum/process_keycode/process_steno.c ****             return false;
+ 147:quantum/process_keycode/process_steno.c ****         }
+ 148:quantum/process_keycode/process_steno.c ****       } else {
+ 149:quantum/process_keycode/process_steno.c ****         --pressed;
+ 150:quantum/process_keycode/process_steno.c ****         if (pressed <= 0) {
+ 151:quantum/process_keycode/process_steno.c ****           pressed = 0;
+ 152:quantum/process_keycode/process_steno.c ****           switch(mode) {
+ 153:quantum/process_keycode/process_steno.c ****             case STENO_MODE_BOLT:
+ 154:quantum/process_keycode/process_steno.c ****               return send_state_bolt();
+ 155:quantum/process_keycode/process_steno.c ****             case STENO_MODE_GEMINI:
+ 156:quantum/process_keycode/process_steno.c ****               return send_state_gemini();
+ 157:quantum/process_keycode/process_steno.c ****             default:
+ 158:quantum/process_keycode/process_steno.c ****               return false;
+ 159:quantum/process_keycode/process_steno.c ****           }
+ 160:quantum/process_keycode/process_steno.c ****         }
+ 161:quantum/process_keycode/process_steno.c ****       }
+ 162:quantum/process_keycode/process_steno.c **** 
+ 163:quantum/process_keycode/process_steno.c ****   }
+ 164:quantum/process_keycode/process_steno.c ****   return true;
+ 353               		.loc 1 164 0
+ 354 0016 81E0      		ldi r24,lo8(1)
+ 355               	.LVL27:
+ 356               	.L17:
+ 357               	/* epilogue start */
+ 165:quantum/process_keycode/process_steno.c **** }
+ 358               		.loc 1 165 0
+ 359 0018 0895      		ret
+ 360               	.LVL28:
+ 361               	.L20:
+ 123:quantum/process_keycode/process_steno.c ****   switch (keycode) {
+ 362               		.loc 1 123 0
+ 363 001a 2133      		cpi r18,49
+ 364 001c 3A45      		sbci r19,90
+ 365 001e 01F4      		brne .L48
+ 366 0020 9081      		ld r25,Z
+ 367               	.LVL29:
+ 368 0022 8181      		ldd r24,Z+1
+ 369               	.LVL30:
+ 370 0024 2281      		ldd r18,Z+2
+ 371               	.LVL31:
+ 372               	.LBB17:
+ 373               	.LBB18:
+ 374               	.LBB19:
+ 375               	.LBB20:
+ 376               		.file 2 "./tmk_core/common/keyboard.h"
+   1:./tmk_core/common/keyboard.h **** /*
+   2:./tmk_core/common/keyboard.h **** Copyright 2011,2012,2013 Jun Wako <wakojun@gmail.com>
+   3:./tmk_core/common/keyboard.h **** 
+   4:./tmk_core/common/keyboard.h **** This program is free software: you can redistribute it and/or modify
+   5:./tmk_core/common/keyboard.h **** it under the terms of the GNU General Public License as published by
+   6:./tmk_core/common/keyboard.h **** the Free Software Foundation, either version 2 of the License, or
+   7:./tmk_core/common/keyboard.h **** (at your option) any later version.
+   8:./tmk_core/common/keyboard.h **** 
+   9:./tmk_core/common/keyboard.h **** This program is distributed in the hope that it will be useful,
+  10:./tmk_core/common/keyboard.h **** but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:./tmk_core/common/keyboard.h **** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:./tmk_core/common/keyboard.h **** GNU General Public License for more details.
+  13:./tmk_core/common/keyboard.h **** 
+  14:./tmk_core/common/keyboard.h **** You should have received a copy of the GNU General Public License
+  15:./tmk_core/common/keyboard.h **** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  16:./tmk_core/common/keyboard.h **** */
+  17:./tmk_core/common/keyboard.h **** 
+  18:./tmk_core/common/keyboard.h **** #ifndef KEYBOARD_H
+  19:./tmk_core/common/keyboard.h **** #define KEYBOARD_H
+  20:./tmk_core/common/keyboard.h **** 
+  21:./tmk_core/common/keyboard.h **** #include <stdbool.h>
+  22:./tmk_core/common/keyboard.h **** #include <stdint.h>
+  23:./tmk_core/common/keyboard.h **** 
+  24:./tmk_core/common/keyboard.h **** 
+  25:./tmk_core/common/keyboard.h **** #ifdef __cplusplus
+  26:./tmk_core/common/keyboard.h **** extern "C" {
+  27:./tmk_core/common/keyboard.h **** #endif
+  28:./tmk_core/common/keyboard.h **** 
+  29:./tmk_core/common/keyboard.h **** /* key matrix position */
+  30:./tmk_core/common/keyboard.h **** typedef struct {
+  31:./tmk_core/common/keyboard.h ****     uint8_t col;
+  32:./tmk_core/common/keyboard.h ****     uint8_t row;
+  33:./tmk_core/common/keyboard.h **** } keypos_t;
+  34:./tmk_core/common/keyboard.h **** 
+  35:./tmk_core/common/keyboard.h **** /* key event */
+  36:./tmk_core/common/keyboard.h **** typedef struct {
+  37:./tmk_core/common/keyboard.h ****     keypos_t key;
+  38:./tmk_core/common/keyboard.h ****     bool     pressed;
+  39:./tmk_core/common/keyboard.h ****     uint16_t time;
+  40:./tmk_core/common/keyboard.h **** } keyevent_t;
+  41:./tmk_core/common/keyboard.h **** 
+  42:./tmk_core/common/keyboard.h **** /* equivalent test of keypos_t */
+  43:./tmk_core/common/keyboard.h **** #define KEYEQ(keya, keyb)       ((keya).row == (keyb).row && (keya).col == (keyb).col)
+  44:./tmk_core/common/keyboard.h **** 
+  45:./tmk_core/common/keyboard.h **** /* Rules for No Event:
+  46:./tmk_core/common/keyboard.h ****  * 1) (time == 0) to handle (keyevent_t){} as empty event
+  47:./tmk_core/common/keyboard.h ****  * 2) Matrix(255, 255) to make TICK event available
+  48:./tmk_core/common/keyboard.h ****  */
+  49:./tmk_core/common/keyboard.h **** static inline bool IS_NOEVENT(keyevent_t event) { return event.time == 0 || (event.key.row == 255 &
+ 377               		.loc 2 49 0
+ 378 0026 4381      		ldd r20,Z+3
+ 379 0028 5481      		ldd r21,Z+4
+ 380 002a 452B      		or r20,r21
+ 381 002c 01F0      		breq .L42
+ 382 002e 8F3F      		cpi r24,lo8(-1)
+ 383 0030 01F4      		brne .L43
+ 384 0032 81E0      		ldi r24,lo8(1)
+ 385               	.LVL32:
+ 386 0034 9F3F      		cpi r25,lo8(-1)
+ 387 0036 01F0      		breq .L26
+ 388               	.L43:
+ 389 0038 80E0      		ldi r24,0
+ 390 003a 00C0      		rjmp .L26
+ 391               	.LVL33:
+ 392               	.L19:
+ 393 003c 9081      		ld r25,Z
+ 394               	.LVL34:
+ 395 003e 8181      		ldd r24,Z+1
+ 396               	.LVL35:
+ 397 0040 2281      		ldd r18,Z+2
+ 398               	.LVL36:
+ 399               	.LBE20:
+ 400               	.LBE19:
+ 401               	.LBE18:
+ 402               	.LBE17:
+ 403               	.LBB25:
+ 404               	.LBB26:
+ 405               	.LBB27:
+ 406               	.LBB28:
+ 407 0042 4381      		ldd r20,Z+3
+ 408 0044 5481      		ldd r21,Z+4
+ 409 0046 452B      		or r20,r21
+ 410 0048 01F0      		breq .L39
+ 411 004a 8F3F      		cpi r24,lo8(-1)
+ 412 004c 01F4      		brne .L40
+ 413 004e 81E0      		ldi r24,lo8(1)
+ 414               	.LVL37:
+ 415 0050 9F3F      		cpi r25,lo8(-1)
+ 416 0052 01F0      		breq .L23
+ 417               	.L40:
+ 418 0054 80E0      		ldi r24,0
+ 419 0056 00C0      		rjmp .L23
+ 420               	.LVL38:
+ 421               	.L39:
+ 422 0058 81E0      		ldi r24,lo8(1)
+ 423               	.LVL39:
+ 424               	.L23:
+ 425               	.LBE28:
+ 426               	.LBE27:
+  50:./tmk_core/common/keyboard.h **** static inline bool IS_PRESSED(keyevent_t event) { return (!IS_NOEVENT(event) && event.pressed); }
+ 427               		.loc 2 50 0
+ 428 005a 80FD      		sbrc r24,0
+ 429 005c 00C0      		rjmp .L41
+ 430               	.LVL40:
+ 431               	.L25:
+ 432               	.LBE26:
+ 433               	.LBE25:
+ 125:quantum/process_keycode/process_steno.c ****         steno_set_mode(STENO_MODE_BOLT);
+ 434               		.loc 1 125 0
+ 435 005e 822F      		mov r24,r18
+ 436 0060 8170      		andi r24,lo8(1)
+ 437 0062 20FF      		sbrs r18,0
+ 438 0064 00C0      		rjmp .L17
+ 126:quantum/process_keycode/process_steno.c ****       }
+ 439               		.loc 1 126 0
+ 440 0066 80E0      		ldi r24,0
+ 441               	.LVL41:
+ 442               	.L65:
+ 132:quantum/process_keycode/process_steno.c ****       }
+ 443               		.loc 1 132 0
+ 444 0068 0E94 0000 		call steno_set_mode
+ 445               	.LVL42:
+ 446               	.L66:
+ 134:quantum/process_keycode/process_steno.c **** 
+ 447               		.loc 1 134 0
+ 448 006c 80E0      		ldi r24,0
+ 449 006e 0895      		ret
+ 450               	.LVL43:
+ 451               	.L41:
+ 452               	.LBB30:
+ 453               	.LBB29:
+ 454               		.loc 2 50 0
+ 455 0070 20E0      		ldi r18,0
+ 456               	.LVL44:
+ 457 0072 00C0      		rjmp .L25
+ 458               	.LVL45:
+ 459               	.L42:
+ 460               	.LBE29:
+ 461               	.LBE30:
+ 462               	.LBB31:
+ 463               	.LBB23:
+ 464               	.LBB22:
+ 465               	.LBB21:
+  49:./tmk_core/common/keyboard.h **** static inline bool IS_PRESSED(keyevent_t event) { return (!IS_NOEVENT(event) && event.pressed); }
+ 466               		.loc 2 49 0
+ 467 0074 81E0      		ldi r24,lo8(1)
+ 468               	.LVL46:
+ 469               	.L26:
+ 470               	.LBE21:
+ 471               	.LBE22:
+ 472               		.loc 2 50 0
+ 473 0076 80FD      		sbrc r24,0
+ 474 0078 00C0      		rjmp .L44
+ 475               	.LVL47:
+ 476               	.L28:
+ 477               	.LBE23:
+ 478               	.LBE31:
+ 131:quantum/process_keycode/process_steno.c ****         steno_set_mode(STENO_MODE_GEMINI);
+ 479               		.loc 1 131 0
+ 480 007a 822F      		mov r24,r18
+ 481 007c 8170      		andi r24,lo8(1)
+ 482 007e 20FF      		sbrs r18,0
+ 483 0080 00C0      		rjmp .L17
+ 132:quantum/process_keycode/process_steno.c ****       }
+ 484               		.loc 1 132 0
+ 485 0082 81E0      		ldi r24,lo8(1)
+ 486 0084 00C0      		rjmp .L65
+ 487               	.LVL48:
+ 488               	.L44:
+ 489               	.LBB32:
+ 490               	.LBB24:
+ 491               		.loc 2 50 0
+ 492 0086 20E0      		ldi r18,0
+ 493               	.LVL49:
+ 494 0088 00C0      		rjmp .L28
+ 495               	.LVL50:
+ 496               	.L64:
+ 497 008a 4081      		ld r20,Z
+ 498               	.LVL51:
+ 499 008c 8181      		ldd r24,Z+1
+ 500               	.LVL52:
+ 501 008e 9281      		ldd r25,Z+2
+ 502               	.LVL53:
+ 503               	.LBE24:
+ 504               	.LBE32:
+ 505               	.LBB33:
+ 506               	.LBB34:
+ 507               	.LBB35:
+ 508               	.LBB36:
+  49:./tmk_core/common/keyboard.h **** static inline bool IS_PRESSED(keyevent_t event) { return (!IS_NOEVENT(event) && event.pressed); }
+ 509               		.loc 2 49 0
+ 510 0090 6381      		ldd r22,Z+3
+ 511 0092 7481      		ldd r23,Z+4
+ 512               	.LVL54:
+ 513 0094 672B      		or r22,r23
+ 514 0096 01F0      		breq .L45
+ 515 0098 8F3F      		cpi r24,lo8(-1)
+ 516 009a 01F4      		brne .L46
+ 517 009c 81E0      		ldi r24,lo8(1)
+ 518               	.LVL55:
+ 519 009e 4F3F      		cpi r20,lo8(-1)
+ 520 00a0 01F0      		breq .L29
+ 521               	.L46:
+ 522 00a2 80E0      		ldi r24,0
+ 523 00a4 00C0      		rjmp .L29
+ 524               	.LVL56:
+ 525               	.L45:
+ 526 00a6 81E0      		ldi r24,lo8(1)
+ 527               	.LVL57:
+ 528               	.L29:
+ 529               	.LBE36:
+ 530               	.LBE35:
+ 531               		.loc 2 50 0
+ 532 00a8 80FD      		sbrc r24,0
+ 533 00aa 00C0      		rjmp .L47
+ 534 00ac 892F      		mov r24,r25
+ 535               	.L31:
+ 536 00ae 9091 0000 		lds r25,pressed
+ 537               	.LVL58:
+ 538               	.LBE34:
+ 539               	.LBE33:
+ 137:quantum/process_keycode/process_steno.c ****         uint8_t key = keycode - QK_STENO;
+ 540               		.loc 1 137 0
+ 541 00b2 80FF      		sbrs r24,0
+ 542 00b4 00C0      		rjmp .L32
+ 543               	.LVL59:
+ 544               	.LBB38:
+ 139:quantum/process_keycode/process_steno.c ****         switch(mode) {
+ 545               		.loc 1 139 0
+ 546 00b6 9F5F      		subi r25,lo8(-(1))
+ 547 00b8 9093 0000 		sts pressed,r25
+ 140:quantum/process_keycode/process_steno.c ****           case STENO_MODE_BOLT:
+ 548               		.loc 1 140 0
+ 549 00bc 8091 0000 		lds r24,mode
+ 550 00c0 8823      		tst r24
+ 551 00c2 01F0      		breq .L34
+ 552 00c4 8130      		cpi r24,lo8(1)
+ 553 00c6 01F4      		brne .L66
+ 144:quantum/process_keycode/process_steno.c ****           default:
+ 554               		.loc 1 144 0
+ 555 00c8 822F      		mov r24,r18
+ 556 00ca 0C94 0000 		jmp update_state_gemini
+ 557               	.LVL60:
+ 558               	.L47:
+ 559               	.LBE38:
+ 560               	.LBB39:
+ 561               	.LBB37:
+ 562               		.loc 2 50 0
+ 563 00ce 80E0      		ldi r24,0
+ 564 00d0 00C0      		rjmp .L31
+ 565               	.LVL61:
+ 566               	.L34:
+ 567               	.LBE37:
+ 568               	.LBE39:
+ 569               	.LBB40:
+ 142:quantum/process_keycode/process_steno.c ****           case STENO_MODE_GEMINI:
+ 570               		.loc 1 142 0
+ 571 00d2 822F      		mov r24,r18
+ 572 00d4 0C94 0000 		jmp update_state_bolt
+ 573               	.LVL62:
+ 574               	.L32:
+ 575               	.LBE40:
+ 149:quantum/process_keycode/process_steno.c ****         if (pressed <= 0) {
+ 576               		.loc 1 149 0
+ 577 00d8 8FEF      		ldi r24,lo8(-1)
+ 578 00da 890F      		add r24,r25
+ 579 00dc 8093 0000 		sts pressed,r24
+ 150:quantum/process_keycode/process_steno.c ****           pressed = 0;
+ 580               		.loc 1 150 0
+ 581 00e0 8111      		cpse r24,__zero_reg__
+ 582 00e2 00C0      		rjmp .L48
+ 152:quantum/process_keycode/process_steno.c ****             case STENO_MODE_BOLT:
+ 583               		.loc 1 152 0
+ 584 00e4 8091 0000 		lds r24,mode
+ 585 00e8 8823      		tst r24
+ 586 00ea 01F0      		breq .L36
+ 587 00ec 8130      		cpi r24,lo8(1)
+ 588 00ee 01F0      		breq .+2
+ 589 00f0 00C0      		rjmp .L66
+ 156:quantum/process_keycode/process_steno.c ****             default:
+ 590               		.loc 1 156 0
+ 591 00f2 0C94 0000 		jmp send_state_gemini
+ 592               	.LVL63:
+ 593               	.L36:
+ 154:quantum/process_keycode/process_steno.c ****             case STENO_MODE_GEMINI:
+ 594               		.loc 1 154 0
+ 595 00f6 0C94 0000 		jmp send_state_bolt
+ 596               	.LVL64:
+ 597               		.cfi_endproc
+ 598               	.LFE118:
+ 600               	.global	boltmap
+ 601               		.section	.data.boltmap,"aw",@progbits
+ 604               	boltmap:
+ 605 0000 00        		.byte	0
+ 606 0001 D0        		.byte	-48
+ 607 0002 D0        		.byte	-48
+ 608 0003 D0        		.byte	-48
+ 609 0004 D0        		.byte	-48
+ 610 0005 D0        		.byte	-48
+ 611 0006 D0        		.byte	-48
+ 612 0007 01        		.byte	1
+ 613 0008 01        		.byte	1
+ 614 0009 02        		.byte	2
+ 615 000a 04        		.byte	4
+ 616 000b 08        		.byte	8
+ 617 000c 10        		.byte	16
+ 618 000d 20        		.byte	32
+ 619 000e 41        		.byte	65
+ 620 000f 42        		.byte	66
+ 621 0010 44        		.byte	68
+ 622 0011 48        		.byte	72
+ 623 0012 48        		.byte	72
+ 624 0013 00        		.byte	0
+ 625 0014 00        		.byte	0
+ 626 0015 00        		.byte	0
+ 627 0016 48        		.byte	72
+ 628 0017 48        		.byte	72
+ 629 0018 50        		.byte	80
+ 630 0019 60        		.byte	96
+ 631 001a 81        		.byte	-127
+ 632 001b 82        		.byte	-126
+ 633 001c 84        		.byte	-124
+ 634 001d 88        		.byte	-120
+ 635 001e 90        		.byte	-112
+ 636 001f A0        		.byte	-96
+ 637 0020 C1        		.byte	-63
+ 638 0021 C2        		.byte	-62
+ 639 0022 C4        		.byte	-60
+ 640 0023 D0        		.byte	-48
+ 641 0024 D0        		.byte	-48
+ 642 0025 D0        		.byte	-48
+ 643 0026 D0        		.byte	-48
+ 644 0027 D0        		.byte	-48
+ 645 0028 D0        		.byte	-48
+ 646 0029 C8        		.byte	-56
+ 647 002a 0000 0000 		.zero	22
+ 647      0000 0000 
+ 647      0000 0000 
+ 647      0000 0000 
+ 647      0000 0000 
+ 648               		.comm	mode,1,1
+ 649               	.global	pressed
+ 650               		.section	.bss.pressed,"aw",@nobits
+ 653               	pressed:
+ 654 0000 00        		.zero	1
+ 655               	.global	state
+ 656               		.section	.bss.state,"aw",@nobits
+ 659               	state:
+ 660 0000 0000 0000 		.zero	6
+ 660      0000 
+ 661               		.text
+ 662               	.Letext0:
+ 663               		.file 3 "/usr/avr/include/stdint.h"
+ 664               		.file 4 "/usr/lib/gcc/avr/7.3.0/include/stddef.h"
+ 665               		.file 5 "./tmk_core/common/action.h"
+ 666               		.file 6 "./lib/lufa/LUFA/Drivers/USB/Core/AVR8/../StdRequestType.h"
+ 667               		.file 7 "./lib/lufa/LUFA/Drivers/USB/Core/AVR8/../DeviceStandardReq.h"
+ 668               		.file 8 "./lib/lufa/LUFA/Drivers/USB/Core/USBTask.h"
+ 669               		.file 9 "./lib/lufa/LUFA/Drivers/USB/Core/HostStandardReq.h"
+ 670               		.file 10 "/usr/avr/include/stdio.h"
+ 671               		.file 11 "./tmk_core/common/report.h"
+ 672               		.file 12 "./tmk_core/common/host.h"
+ 673               		.file 13 "./tmk_core/common/debug.h"
+ 674               		.file 14 "./quantum/keycode_config.h"
+ 675               		.file 15 "./quantum/keymap.h"
+ 676               		.file 16 "./tmk_core/common/action_layer.h"
+ 677               		.file 17 "./tmk_core/common/timer.h"
+ 678               		.file 18 "./tmk_core/common/action_util.h"
+ 679               		.file 19 "/usr/avr/include/stdlib.h"
+ 680               		.file 20 "./quantum/process_keycode/process_tap_dance.h"
+ 681               		.file 21 "./quantum/quantum.h"
+ 682               		.file 22 "quantum/process_keycode/process_steno.h"
+ 683               		.file 23 "./quantum/quantum_keycodes.h"
+ 684               		.file 24 "./quantum/keymap_extras/keymap_steno.h"
+ 685               		.file 25 "./tmk_core/common/virtser.h"
+ 686               		.file 26 "/usr/avr/include/avr/eeprom.h"
+ 687               		.file 27 "./tmk_core/common/eeconfig.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 process_steno.c
+     /tmp/ccs4WiNO.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccs4WiNO.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccs4WiNO.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccs4WiNO.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccs4WiNO.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccs4WiNO.s:13     .text.steno_clear_state:0000000000000000 steno_clear_state
+     /tmp/ccs4WiNO.s:659    .bss.state:0000000000000000 state
+     /tmp/ccs4WiNO.s:40     .text.steno_init:0000000000000000 steno_init
+                            *COM*:0000000000000001 mode
+     /tmp/ccs4WiNO.s:72     .text.steno_set_mode:0000000000000000 steno_set_mode
+     /tmp/ccs4WiNO.s:108    .text.send_steno_state:0000000000000000 send_steno_state
+     /tmp/ccs4WiNO.s:190    .text.update_state_bolt:0000000000000000 update_state_bolt
+     /tmp/ccs4WiNO.s:604    .data.boltmap:0000000000000000 boltmap
+     /tmp/ccs4WiNO.s:229    .text.send_state_bolt:0000000000000000 send_state_bolt
+     /tmp/ccs4WiNO.s:256    .text.update_state_gemini:0000000000000000 update_state_gemini
+     /tmp/ccs4WiNO.s:300    .text.send_state_gemini:0000000000000000 send_state_gemini
+     /tmp/ccs4WiNO.s:329    .text.process_steno:0000000000000000 process_steno
+     /tmp/ccs4WiNO.s:653    .bss.pressed:0000000000000000 pressed
+
+UNDEFINED SYMBOLS
+eeconfig_is_enabled
+eeconfig_init
+eeprom_read_byte
+eeprom_update_byte
+virtser_send
+__udivmodqi4
+__do_copy_data
+__do_clear_bss

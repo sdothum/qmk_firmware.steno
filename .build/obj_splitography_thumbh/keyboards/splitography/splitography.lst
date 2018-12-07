@@ -1,0 +1,79 @@
+   1               		.file	"splitography.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text.matrix_init_kb,"ax",@progbits
+  11               	.global	matrix_init_kb
+  13               	matrix_init_kb:
+  14               	.LFB110:
+  15               		.file 1 "keyboards/splitography/splitography.c"
+   1:keyboards/splitography/splitography.c **** /* Copyright 2017 REPLACE_WITH_YOUR_NAME
+   2:keyboards/splitography/splitography.c ****  *
+   3:keyboards/splitography/splitography.c ****  * This program is free software: you can redistribute it and/or modify
+   4:keyboards/splitography/splitography.c ****  * it under the terms of the GNU General Public License as published by
+   5:keyboards/splitography/splitography.c ****  * the Free Software Foundation, either version 2 of the License, or
+   6:keyboards/splitography/splitography.c ****  * (at your option) any later version.
+   7:keyboards/splitography/splitography.c ****  *
+   8:keyboards/splitography/splitography.c ****  * This program is distributed in the hope that it will be useful,
+   9:keyboards/splitography/splitography.c ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  10:keyboards/splitography/splitography.c ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  11:keyboards/splitography/splitography.c ****  * GNU General Public License for more details.
+  12:keyboards/splitography/splitography.c ****  *
+  13:keyboards/splitography/splitography.c ****  * You should have received a copy of the GNU General Public License
+  14:keyboards/splitography/splitography.c ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  15:keyboards/splitography/splitography.c ****  */
+  16:keyboards/splitography/splitography.c **** #include "splitography.h"
+  17:keyboards/splitography/splitography.c **** 
+  18:keyboards/splitography/splitography.c **** void matrix_init_kb(void) {
+  16               		.loc 1 18 0
+  17               		.cfi_startproc
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+  19:keyboards/splitography/splitography.c **** 	// put your keyboard start-up code here
+  20:keyboards/splitography/splitography.c **** 	// runs once when the firmware starts up
+  21:keyboards/splitography/splitography.c **** 
+  22:keyboards/splitography/splitography.c **** 	matrix_init_user();
+  22               		.loc 1 22 0
+  23 0000 0C94 0000 		jmp matrix_init_user
+  24               	.LVL0:
+  25               		.cfi_endproc
+  26               	.LFE110:
+  28               		.text
+  29               	.Letext0:
+  30               		.file 2 "/usr/avr/include/stdint.h"
+  31               		.file 3 "/usr/lib/gcc/avr/7.3.0/include/stddef.h"
+  32               		.file 4 "./lib/lufa/LUFA/Drivers/USB/Core/AVR8/../StdRequestType.h"
+  33               		.file 5 "./tmk_core/common/action.h"
+  34               		.file 6 "./lib/lufa/LUFA/Drivers/USB/Core/AVR8/../DeviceStandardReq.h"
+  35               		.file 7 "./lib/lufa/LUFA/Drivers/USB/Core/USBTask.h"
+  36               		.file 8 "./lib/lufa/LUFA/Drivers/USB/Core/HostStandardReq.h"
+  37               		.file 9 "/usr/avr/include/stdio.h"
+  38               		.file 10 "./tmk_core/common/report.h"
+  39               		.file 11 "./tmk_core/common/host.h"
+  40               		.file 12 "./tmk_core/common/debug.h"
+  41               		.file 13 "./quantum/keycode_config.h"
+  42               		.file 14 "./quantum/keymap.h"
+  43               		.file 15 "./tmk_core/common/action_layer.h"
+  44               		.file 16 "./tmk_core/common/timer.h"
+  45               		.file 17 "./tmk_core/common/action_util.h"
+  46               		.file 18 "/usr/avr/include/stdlib.h"
+  47               		.file 19 "./quantum/process_keycode/process_tap_dance.h"
+  48               		.file 20 "./quantum/quantum.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 splitography.c
+     /tmp/ccwcslYk.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccwcslYk.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccwcslYk.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccwcslYk.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccwcslYk.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccwcslYk.s:13     .text.matrix_init_kb:0000000000000000 matrix_init_kb
+
+UNDEFINED SYMBOLS
+matrix_init_user
